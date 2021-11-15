@@ -20,7 +20,7 @@ class CategoryController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth:api' , ['except' => ['getMerchantCategories', 'getCategoriesSlider']]);
+        $this->middleware('auth:api' , ['except' => ['getMerchantCategories', 'getCategoriesSlider', 'getcategories']]);
     }
 	
 	public function getCategories(Request $request) {

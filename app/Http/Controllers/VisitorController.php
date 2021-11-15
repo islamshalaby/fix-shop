@@ -339,7 +339,7 @@ class VisitorController extends Controller
         $visitor = Visitor::select('id')->where('unique_id', $request->unique_id)->first();
 
         $cartCount = Cart::where('visitor_id', $visitor->id)->sum('count');
-        $discount = Discount::where('min_products_number', '<', $cartCount)->where('max_products_number', '>', $cartCount)->select('value')->first();
+        $discount = Discount::where('min_products_number', '<=', $cartCount)->where('max_products_number', '>=', $cartCount)->select('value')->first();
         $percentage = 0;
         if ($discount) {
             $percentage = $discount->value;

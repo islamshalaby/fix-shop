@@ -24,7 +24,7 @@ class ProductController extends Controller
     // product details
     public function getdetails(Request $request, $id){
 
-        $data = Product::where('id', $id)->select('id', 'title_' . $request->lang . ' as title', 'offer', 'description_' . $request->lang . ' as description', 'final_price', 'price_before_offer', 'offer_percentage', 'category_id', 'installation_cost')->first()->makeHidden('category');
+        $data = Product::where('id', $id)->select('id', 'title_' . $request->lang . ' as title', 'offer', 'description_' . $request->lang . ' as description', 'final_price', 'price_before_offer', 'offer_percentage', 'category_id', 'installation_cost')->first()->makeHidden(['category', 'installation_cost', 'category_id']);
         
         $price = $data['final_price'];
         $priceBOffer = $data['price_before_offer'];

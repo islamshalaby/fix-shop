@@ -57,6 +57,7 @@ class AddressController extends Controller
         // if the number of edges we passed through is even, then it's not in the poly.
         return $c%2!=0;
     }
+    
     public function getInPolygon(Request $request) {
         $polygon = [];
         $coordinates = Coordinate::get();
@@ -65,7 +66,15 @@ class AddressController extends Controller
             array_push($polygon, $arr);
         }
         
-        $data = $this->pointInPolygon((object)['lat' => $request->lat, 'long' => $request->long], $polygon);
+        $data['result'] = $this->pointInPolygon((object)['lat' => $request->lat, 'long' => $request->long], $polygon);
+        $data['message'] = '';
+        if ($data['result'] == false) {
+            $message = 'لا نخدم هذه المنطقة حالياً';
+            if ($request->lang == 'en') {
+                $message = 'currently, we do not serve this area';
+            }
+            $data['message'] = $message;
+        }
 
         $response = APIHelpers::createApiResponse(false , 200 , '' , '' , $data , $request->lang);
         return response()->json($response , 200);
