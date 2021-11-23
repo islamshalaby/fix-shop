@@ -82,10 +82,10 @@ class SubCategoryController extends AdminController
             ]);
         if($request->file('image')){
             $image = $model->image;
-            $publicId = substr($image, 0 ,strrpos($image, "."));
-            if($publicId != null ){
-                Cloudder::delete($publicId);
-            }
+            // $publicId = substr($image, 0 ,strrpos($image, "."));
+            // if($publicId != null ){
+            //     Cloudder::delete($publicId);
+            // }
             $image_name = $request->file('image')->getRealPath();
             $imagereturned = Cloudinary::upload($image_name);
             $image_id = $imagereturned->getPublicId();
