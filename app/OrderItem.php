@@ -6,16 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class OrderItem extends Model
 {
-    protected $fillable = ['order_id', 'product_id', 'option_id', 'count', 'price_before_offer', 'final_price', 'delivered_at', 'refunded_at', 'discount',
+    protected $fillable = ['order_id', 'product_id', 'count', 'price_before_offer', 'final_price', 'discount', 'discount_value',
+    'installation_cost',
     'status'    // 1 => in progress
-                // 2 => delivery service
-                // 3 => delivered
-                // 4 => canceled from admin
-                // 5 => refund request
-                // 6 => refund accepted
-                // 7 => refund refused
-                // 8 => refunded received
-                // 9 => canceled from admin
     ];
 
     protected $dates = ['delivered_at', 'refunded_at'];

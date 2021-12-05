@@ -827,6 +827,7 @@ class ComposerStaticInit26092f309cc7dc73b32a44b29cb53698
         'App\\Order' => __DIR__ . '/../..' . '/app/Order.php',
         'App\\OrderItem' => __DIR__ . '/../..' . '/app/OrderItem.php',
         'App\\OrderSerial' => __DIR__ . '/../..' . '/app/OrderSerial.php',
+        'App\\Period' => __DIR__ . '/../..' . '/app/Period.php',
         'App\\Permission' => __DIR__ . '/../..' . '/app/Permission.php',
         'App\\Product' => __DIR__ . '/../..' . '/app/Product.php',
         'App\\ProductCountry' => __DIR__ . '/../..' . '/app/ProductCountry.php',

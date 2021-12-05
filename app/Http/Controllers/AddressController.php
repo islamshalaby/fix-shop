@@ -262,8 +262,6 @@ class AddressController extends Controller
         return response()->json($response , 200);
     }
 
-    
-
     public function selectAddressBelongsToArea(Request $request) {
 		$validator = Validator::make($request->all(), [
             'unique_id' => 'required',           
@@ -289,6 +287,5 @@ class AddressController extends Controller
         }
         
     }
-
 
 }

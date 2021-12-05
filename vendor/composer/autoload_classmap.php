@@ -149,6 +149,7 @@ return array(
     'App\\Order' => $baseDir . '/app/Order.php',
     'App\\OrderItem' => $baseDir . '/app/OrderItem.php',
     'App\\OrderSerial' => $baseDir . '/app/OrderSerial.php',
+    'App\\Period' => $baseDir . '/app/Period.php',
     'App\\Permission' => $baseDir . '/app/Permission.php',
     'App\\Product' => $baseDir . '/app/Product.php',
     'App\\ProductCountry' => $baseDir . '/app/ProductCountry.php',

@@ -4,28 +4,26 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\User;
-use App\UserAddress;
+use App\Period;
 use App\Visitor;
 use App\Product;
 use App\Cart;
 use App\Order;
 use App\OrderItem;
-use App\DeliveryArea;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
 use App\Helpers\APIHelpers;
 use App\Shop;
 use App\ProductMultiOption;
-use App\MainOrder;
+use Illuminate\Support\Facades\Session;
 use App\Wallet;
-use App\Setting;
 use App\Retrieve;
 use App\Currency;
 use App\OrderSerial;
 use App\StoreNotification;
 use App\ProductVip;
-use App\Serial;
+use App\Discount;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 
@@ -33,66 +31,77 @@ class OrderController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth:api' , ['except' => ['execute', 'pay_sucess', 'pay_error', 'excute_pay']]);
+        $this->middleware('auth:api' , ['except' => ['execute', 'pay_sucess', 'pay_error', 'excute_pay', 'getExpectedDeliveryPeriod']]);
     }
 
     public function create(Request $request) {
-        if (!$request->header('uniqueid') || empty($request->header('uniqueid'))) {
-            $response = APIHelpers::createApiResponse(true , 406 , 'unique_id required header' , 'unique_id required header' , null , $request->lang);
-            return response()->json($response , 406);
+        if ($request->lang == 'en') {
+            $messages = [
+                'unique_id.required' => "Unique id is required field",
+                'expected_period.required' => 'Exprcted Period is required field',
+                'address_id.required' => 'Address id is required field'
+            ];
+        }else {
+            $messages = [
+                'unique_id.required' => "الرقم التعريفى للجوال حقل مطلوب",
+                'expected_period.required' => 'الفترة المتوقعة للتوصيل حقل مطلوب',
+                'address_id.required' => 'الرقم التعريفى للعنوان حقل مطلوب'
+            ];
         }
+        $validator = Validator::make($request->all(), [
+            'unique_id' => 'required',
+            'expected_period' => 'required',
+            'address_id' => 'required'
+        ], $messages);
 
-        $visitor = Visitor::where('unique_id', $request->header('uniqueid'))->select('id', 'country_code')->first();
+        $visitor = Visitor::where('unique_id', $request->unique_id)->select('id')->first();
         
-        if ($visitor && !empty($visitor->country_code)) {
-            $currency = $visitor->country->currency_en;
-            $currency = Currency::where('from', "usd")->where('to', 'kwd')->first();
-            if (isset($currency['id'])) {
-                if (!$currency->updated_at->isToday()) {
-                    $result = APIHelpers::converCurruncy2("usd", 'kwd');
-                    if(isset($result['value'])){
-                        $currency->update(['value' => $result['value'], 'updated_at' => Carbon::now()]);
-                        $currency = Currency::where('from', "usd")->where('to', 'kwd')->first();
-                    }
-                }
-            }else {
-                $result = APIHelpers::converCurruncy2("usd", 'kwd');
-                
-                if(isset($result['value']) && !$currency){
-                    $result = APIHelpers::converCurruncy2("usd", 'kwd');
-                    $currency = Currency::create(['value' => $result['value'], "from" => "usd", "to" => 'kwd']);
-                }
-            }
+        if ($visitor) {
             $cart = Cart::where('visitor_id', $visitor->id)->get();
             
             if (count($cart) > 0) {
                 for ($i = 0; $i < count($cart); $i++) {
                     $product = Product::where('deleted', 0)->where('hidden', 0)->where('id', $cart[$i]->product_id)->first();
-                    if ($cart[$i]->product->remaining_quantity < $cart[$i]['count'] && count($product->serials) < $cart[$i]['count']) {
+                    if ($cart[$i]->product->remaining_quantity < $cart[$i]['count']) {
                         $response = APIHelpers::createApiResponse(true , 406 , 'Remaining Quantity is not enough' , 'الكمية المتبقية غير كافية' , null , $request->lang);
                         return response()->json($response , 406);
                     }
                 }
             }
             $total = 0.000;
-
+            $totalDiscount = 0.000;
+            $subTotal = 0.000;
+            $totalDelivery = 0.000;
+            $totalCount = 0;
+            $allCartCount = Cart::where('visitor_id', $visitor->id)->sum('count');
+            $discount = Discount::where('min_products_number', '<=', $allCartCount)->where('max_products_number', '>=', $allCartCount)->select('value')->first();
+            
             if (count($cart) > 0) {
                 for ($i = 0; $i < count($cart); $i ++) {
                     $product = Product::where('deleted', 0)->where('hidden', 0)->where('id', $cart[$i]->product_id)->first();
+                    $cartCount = $cart[$i]['count'];
+                    $totalCount = $totalCount + $cart[$i]['count'];
                     $price = $product['final_price'];
-                    if (!empty(auth()->user()->vip_id)) {
-                        $productVip = ProductVip::where('vip_id', auth()->user()->vip_id)->where('product_id', $product['id'])->first();
-                        if ($productVip) {
-                            $priceOffer = $price * ($productVip->percentage / 100);
-                            $price = ($price  * $cart[$i]['count']) - ($priceOffer  * $cart[$i]['count']);
-                        }
-                    }else {
-                        $price = $price * $cart[$i]['count'];
-                    }
-                    $total = $price + $total;
+                    $subTotal = $subTotal + ($price * $cartCount);
+                    
+                    $total = $total + ($price * $cartCount) + ($product['installation_cost'] * $cartCount);
+                    
+                    $deliveryInstallation = $product['installation_cost'] * $cartCount;
+                
+                    $totalDiscount = $totalDiscount;
+                    
+                    $totalDelivery = $totalDelivery + $deliveryInstallation;
+                    $price = $price + $deliveryInstallation;
+                    
                 }
             }
-
+            
+            if ($discount) {
+                $totalDiscount = $totalDelivery * ($discount->value / 100);
+            }
+            $totalDelivery = $totalDelivery - $totalDiscount;
+            $total = $total - $totalDiscount;
+            
             $root_url = $request->root();
             $user = auth()->user();
             
@@ -103,9 +112,11 @@ class OrderController extends Controller
                 'Content-Type:application/json'
             );
             $price = $total;
+            $request->payment_method = 1;
             
             $request->payment_method = 1;
-            $call_back_url = $root_url . "/api/excute?user_id=".$user->id."&unique_id=".$request->header('uniqueid')."&payment_method=".$request->payment_method."&price=" . number_format((float)$price, 3, '.', '');
+            
+            $call_back_url = $root_url . "/api/excute?user_id=".$user->id."&unique_id=".$request->unique_id."&payment_method=".$request->payment_method."&price=" . number_format((float)$price, 3, '.', '') . "&total_discount=" . number_format((float)$totalDiscount, 3, '.', '') . "&subtotal=" . number_format((float)$subTotal, 3, '.', '') . "&address_id=" . $request->address_id . "&total_delivery=" . number_format((float)$totalDelivery, 3, '.', '') . "&expected_period=" . $request->expected_period . "&count=" . $totalCount;
 			
 
             $error_url = $root_url . "/api/pay/error";
@@ -117,8 +128,8 @@ class OrderController extends Controller
                 "ErrorUrl" => $error_url,
                 "Language" => "AR",
                 "CustomerEmail" => $user->email,
-                "CustomerMobile" => substr($user->phone, 4),
-                "DisplayCurrencyIso" => "USD"
+                // "CustomerMobile" => substr($user->phone, 4),
+                "DisplayCurrencyIso" => "SAR"
             ); 
 
             $payload =json_encode($fields);
@@ -146,29 +157,18 @@ class OrderController extends Controller
         }
         
     }
+
+    // get expected delivery period
+    public function getExpectedDeliveryPeriod(Request $request) {
+        $data = Period::select('id', 'period_' . $request->lang . ' as period')->OrderBy('id', 'desc')->get();
+
+        $response = APIHelpers::createApiResponse(false , 200 , '' , '' , $data , $request->lang);
+        return response()->json($response , 200);
+    }
     
     public function execute(Request $request){
-        $visitor = Visitor::where('unique_id', $request->unique_id)->select('id', 'country_code')->first();
-        if ($visitor && !empty($visitor->country_code)) {
-            $currency = $visitor->country->currency_en;
-            $currency = Currency::where('from', "usd")->where('to', 'kwd')->first();
-            if (isset($currency['id'])) {
-                if (!$currency->updated_at->isToday()) {
-                    $result = APIHelpers::converCurruncy2("usd", 'kwd');
-                    if(isset($result['value'])){
-                        $currency->update(['value' => $result['value'], 'updated_at' => Carbon::now()]);
-                        $currency = Currency::where('from', "usd")->where('to', 'kwd')->first();
-                    }
-                }
-                
-            }else {
-                $result = APIHelpers::converCurruncy2("usd", 'kwd');
-                // dd($result);
-                if(isset($result['value']) && !$currency){
-                    $result = APIHelpers::converCurruncy2("usd", 'kwd');
-                    $currency = Currency::create(['value' => $result['value'], "from" => "usd", "to" => 'kwd']);
-                }
-            }
+        $visitor = Visitor::where('unique_id', $request->unique_id)->select('id')->first();
+        if ($visitor) {
             $cart = Cart::where('visitor_id', $visitor->id)->get();
             
             $now = Carbon::now();
@@ -181,11 +181,19 @@ class OrderController extends Controller
                 }
                 $orderNumber = $now->year . $now->month . $now->day . $subSOrder;
             }
+            $followNumber = Str::random(5) . $orderNumber;
             $order = Order::create([
                 'order_number' => $orderNumber,
+                'follow_number' => $followNumber,
                 'user_id' => $request->user_id,
+                'address_id' => $request->address_id,
                 'payment_method' => 1,
-                'country_code' => $visitor->country_code,
+                'subtotal_price' => $request->subtotal,
+                'delivery_cost' => $request->total_delivery,
+                'total_price' => $request->price,
+                'discount' => $request->total_discount,
+                'expected_period' => $request->expected_period,
+                'count' => $request->count,
                 'status' => 1
             ]);
             $user = User::where('id', $request->user_id)->first();
@@ -195,72 +203,36 @@ class OrderController extends Controller
                     $product = Product::where('deleted', 0)->where('hidden', 0)->where('id', $cart[$i]['product_id'])->first();
                     $price = $product['final_price'];
                     $priceBOffer = $product['price_before_offer'];
-                    if (!empty($user->vip_id)) {
-                        $productVip = ProductVip::where('vip_id', $user->vip_id)->where('product_id', $product['id'])->first();
-                        if ($productVip) {
-                            $priceOffer = $price * ($productVip->percentage / 100);
-                            $price = $price - $priceOffer;
-                            $priceBOffer = $product['final_price'];
-                            $product['offer_percentage'] = $productVip->percentage;
-                        }
-                    }
+                    $cartCount = $cart[$i]['count'];
+                    
+                    $deliveryInstallation = $product['installation_cost'] * $cartCount;
+                    
                     $oItem = OrderItem::create([
                         'order_id' => $order->id,
                         'product_id' => $product->id,
                         'price_before_offer' => number_format((float)$priceBOffer, 3, '.', ''),
                         'final_price' => number_format((float)$price, 3, '.', ''),
-                        'discount' => $product['offer_percentage'],
-                        'count' => $cart[$i]['count'],
+                        // 'discount' => $discountPercentage,
+                        // 'discount_value' => number_format((float)$discountValue, 3, '.', ''),
+                        'installation_cost' => number_format((float)$deliveryInstallation, 3, '.', ''),
+                        'count' => $cartCount,
                         'status' => 1
                     ]);
-                    // get valid product serials
-                    $path='http://athath-ads.tk/api/serials/valid';
-                    $fields =array(
-                        'product_id' => $product->id
-                    );
-                    $result = APIHelpers::fetchApi($path, $fields, 'json', 'post');
                     
-                    $serials = $result->data;
-                    if (count($serials) > 0) {
-                        for ($s = 0; $s < $cart[$i]['count']; $s ++) {
-                            $oItemSerials = OrderSerial::create([
-                                'order_id' => $oItem->id,
-                                'serial_id' => $serials[$s]->id,
-                                'serial' => $serials[$s]->serial,
-                                'serial_number' => $serials[$s]->serial_number,
-                                'valid_to' => $serials[$s]->valid_to,
-                                'product_id' => $product->id
-                            ]);
-
-                            // update sold serials
-                            $path='http://athath-ads.tk/api/serials/update-serial-bought';
-                            $fields =array(
-                                'serial_id' => $serials[$s]->id
-                            );
-                            APIHelpers::fetchApi($path, $fields, 'json', 'post');
-
-                            $product->remaining_quantity = $product->remaining_quantity - 1;
-                            $product->sold_count = $product->sold_count + 1;
-                            $product->save();
-                        }
-                    }
+                    $product->remaining_quantity = $product->remaining_quantity - $cartCount;
+                    $product->sold_count = $product->sold_count + $cartCount;
+                    $product->save();
                     $cart[$i]->delete();
                 }
             }
-            if (count($order->oItems) > 0) {
-                $order->update([
-                    'subtotal_price' => $request->price,
-                    'total_price' => $request->price
-                ]);
-            }
-            $pluckSerials = OrderItem::where('order_id', $order->id)->pluck('id')->toArray();
-            $orderSerials['serials'] = OrderSerial::whereIn('order_id', $pluckSerials)->get();
-            $orderSerials['order'] = $order;
-            Mail::send('order_details_mail', $orderSerials, function($message) use ($user) {
-                $message->to($user->email, $user->name)->subject
-                   ('Order Details');
-                $message->from('modaapp9@gmail.com','Al thuraya');
-             });
+            
+            
+            // $orderSerials['order'] = $order;
+            // Mail::send('order_details_mail', $orderSerials, function($message) use ($user) {
+            //     $message->to($user->email, $user->name)->subject
+            //        ('Order Details');
+            //     $message->from('modaapp9@gmail.com','Al thuraya');
+            //  });
             
             
             return redirect('api/pay/success');
@@ -462,7 +434,7 @@ class OrderController extends Controller
     public function getorders(Request $request){
         $user_id = auth()->user()->id;
         
-        $orders = $this->getMyOrders($user_id, $request);
+        $orders = Order::where('user_id', $user_id)->select('id', 'order_number', 'follow_number', 'count', 'total_price', 'created_at as date')->orderBy('id', 'desc')->simplePaginate(20);
         
         
         $response = APIHelpers::createApiResponse(false , 200 , '' , '' , $orders , $request->lang);
@@ -478,66 +450,16 @@ class OrderController extends Controller
     }
     
     public function orderdetails(Request $request){
-        if (!$request->header('uniqueid') || empty($request->header('uniqueid'))) {
-            $response = APIHelpers::createApiResponse(true , 406 , 'uniqueid required header' , 'uniqueid required header' , null , $request->lang);
-            return response()->json($response , 406);
-        }
-        $visitor = Visitor::where('unique_id', $request->header('uniqueid'))->select('country_code')->first();
-        if ($visitor && !empty($visitor->country_code)) {
-            $currency = $visitor->country->currency_en;
-            $toCurr = trim(strtolower($currency));
-            if ($toCurr == "usd") {
-                $currency = ["value" => 1];
-            }else {
-                $currency = Currency::where('from', "usd")->where('to', $toCurr)->first();
-            }
-            if (isset($currency['id'])) {
-                if (!$currency->updated_at->isToday()) {
-                    $result = APIHelpers::converCurruncy2("usd", $toCurr);
-                    if(isset($result['value'])){
-                        $currency->update(['value' => $result['value'], 'updated_at' => Carbon::now()]);
-                        $currency = Currency::where('from', "usd")->where('to', $toCurr)->first();
-                    }
-                }
-                
-            }else {
-                
-                if(!$currency){
-                    $result = APIHelpers::converCurruncy2("usd", $toCurr);
-                    $currency = Currency::create(['value' => $result['value'], "from" => "usd", "to" => $toCurr]);
-                }
-            }
-            $currencySympol = $visitor->country->currency_en;
-            if ($request->lang == 'ar') {
-                $currencySympol = $visitor->country->currency_ar;
-            }
-            $order_id = $request->id;
-            $order = $this->getOrderDetail($order_id, $request);
-            $order->total_price = $order->total_price * $currency['value'] . " " . $currencySympol;
-            $order->total_price = number_format((float)$order->total_price, 3, '.', '') . " " . $currencySympol;
+        Session::put('language',$request->lang);
+        $order_id = $request->id;
+        $data['order'] = Order::where('id', $order_id)->select('id', 'order_number', 'follow_number', 'created_at as date', 'address_id', 'subtotal_price', 'total_price', 'delivery_cost', 'payment_method')->first()->makeHidden(['address', 'address_id']);
+        $data['order']->orders = $data['order']->orders();
+        $data['address'] = $data['order']->address->extra_details;
+        return $data;
 
-            if (count($order->items) > 0) {
-                $order->items->map(function($row) use ($currency, $currencySympol){
-                    
-                    $price = $row->final_price * $currency['value'];
-                    $priceBOffer = $row->price_before_offer * $currency['value'];
-                    $data['offer'] = 1;
-                    $data['offer_percentage'] = $row->discount;
-                    
-
-                    $row->final_price = number_format((float)$price, 3, '.', '') . " " . $currencySympol;
-                    $row->price_before_offer = number_format((float)$priceBOffer, 3, '.', '') . " " . $currencySympol;
-
-                    return $row;
-                });
-            }
-
-            $response = APIHelpers::createApiResponse(false , 200 , '' , '' , $order , $request->lang);
-            return response()->json($response , 200);
-        }else {
-            $response = APIHelpers::createApiResponse(true , 406 , 'Visitor is not exist or code country is empty' , 'Visitor is not exist or code country is empty' , null , $request->lang);
-            return response()->json($response , 406);
-        }
+        $response = APIHelpers::createApiResponse(false , 200 , '' , '' , $data , $request->lang);
+        return response()->json($response , 200);
+        
     }
 
     public function cancel_item(Request $request, OrderItem $item) {

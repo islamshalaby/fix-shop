@@ -81,6 +81,7 @@ Route::group([
     Route::post('buy/{lang}/{v}' , 'OrderController@directBuy');
     Route::post('retrieve/{lang}/{v}' , 'OrderController@retrieve_item');
     Route::get('{lang}/{v}' , 'OrderController@getorders');
+    Route::get('expected-periods/{lang}/{v}' , 'OrderController@getExpectedDeliveryPeriod');
     Route::get('{id}/{lang}/{v}' , 'OrderController@orderdetails');
     Route::get('cancel/{item}/{lang}/{v}' , 'OrderController@cancel_item');
 });
@@ -103,10 +104,12 @@ Route::group([
     'middleware' => 'api',
     'prefix' => 'visitors'
 ], function($router){
+    
     Route::post('create/{lang}/{v}' , 'VisitorController@create')->middleware('checkguest');
     Route::post('cart/add/{lang}/{v}' , 'VisitorController@add')->middleware('checkguest');
     Route::delete('cart/delete/{lang}/{v}' , 'VisitorController@delete')->middleware('checkguest');
     Route::post('cart/get/{lang}/{v}' , 'VisitorController@get')->middleware('checkguest');
+    Route::post('cart/cart-before-pay/{lang}/{v}' , 'VisitorController@getCartBeforePay');
     Route::post('cart/getbeforeorder/{lang}/{v}' , 'VisitorController@get_cart_before_order');
     Route::put('cart/changecount/{lang}/{v}' , 'VisitorController@changecount')->middleware('checkguest');
     Route::post('cart/count/{lang}/{v}' , 'VisitorController@getcartcount')->middleware('checkguest');

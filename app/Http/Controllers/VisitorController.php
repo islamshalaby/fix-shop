@@ -7,7 +7,7 @@ use App\Visitor;
 use App\Cart;
 use App\Favorite;
 use App\Product;
-use App\Currency;
+use App\UserAddress;
 use App\Discount;
 use App\ProductVip;
 use Carbon\Carbon;
@@ -351,5 +351,114 @@ class VisitorController extends Controller
 
         $response = APIHelpers::createApiResponse(false , 200 , '' , '' , $data , $request->lang);
         return response()->json($response , 200);
+    }
+
+    // get cart details before pay
+    public function getCartBeforePay(Request $request) {
+        if ($request->lang == 'en') {
+            $messages = [
+                'unique_id.required' => "Unique id is required field"
+            ];
+        }else {
+            $messages = [
+                'unique_id.required' => "الرقم التعريفى للجوال حقل مطلوب"
+            ];
+        }
+        $validator = Validator::make($request->all(), [
+            'unique_id' => 'required'
+        ], $messages);
+
+        if ($validator->fails()) {
+            $response = APIHelpers::createApiResponse(true , 406 , $validator->messages()->first() , $validator->messages()->first() , null , $request->lang);
+            return response()->json($response , 406);
+        }
+
+        $user = auth()->user();
+        
+        $visitor = Visitor::where('unique_id' , $request->unique_id)->first();
+        
+        if ($visitor) {
+            $visitor_id =  $visitor['id'];
+            $data['cart'] = [];
+            $data['total'] = 0.000;
+            $data['installation_delivery_cost'] = 0.000;
+            $data['subtotal'] = 0.000;
+            $data['products_count'] = 0;
+            
+            $cart = Cart::where('visitor_id' , $visitor_id)->select('product_id as id' , 'count')->get();
+            if (count($cart) > 0) {
+                for ($i = 0; $i < count($cart); $i ++) {
+                    $product = Product::where('id', $cart[$i]['id'])
+                    ->select('id', 'title_' . $request->lang . ' as title', 'offer', 'final_price', 'price_before_offer', 'offer_percentage', 'installation_cost')
+                    ->first()
+                    ->makeHidden(['images', 'installation_cost']);
+                    $product['count'] = $cart[$i]['count'];
+                    $price = $product['final_price'];
+                    $priceBOffer = $product['price_before_offer'];
+                    
+                    if ($product->main_image) {
+                        $product->main_image = $product->main_image->image;
+                    }else {
+                        if (count($product->images) > 0) {
+                            $product->main_image = $product->images[0]->image;
+                        }
+                    }
+                    $user = auth()->user();
+                    if($user){
+                        $favorite = Favorite::where('user_id' , $user->id)->where('product_id' , $product->id)->first();
+                        if($favorite){
+                            $product->favorite = true;
+                        }else{
+                            $product->favorite = false;
+                        }
+                    }else{
+                        $product->favorite = false;
+                    }
+                    $data['subtotal'] = $data['subtotal'] + ($price * $cart[$i]['count']);
+                    
+                    $data['total'] = $data['total'] + ($price * $cart[$i]['count']) + ($product['installation_cost'] * $cart[$i]['count']);
+                    $product['final_price'] = number_format((float)$price, 3, '.', '');
+                    $product['final_price'] = number_format((float)$product['final_price'], 3, '.', '');
+                    $product['price_before_offer'] = number_format((float)$priceBOffer, 3, '.', '');
+                    $data['installation_delivery_cost'] = $data['installation_delivery_cost'] + ($product['installation_cost'] * $cart[$i]['count']);
+                    
+                    $product['delivery_installation_cost'] = number_format((float)$product['installation_cost'], 3, '.', '');
+                    $data['products_count'] ++;
+                    array_push($data['cart'], $product);
+                }
+            }
+            
+            $cartCount = Cart::where('visitor_id', $visitor->id)->sum('count');
+            $discount = Discount::where('min_products_number', '<=', $cartCount)->where('max_products_number', '>=', $cartCount)->select('value')->first();
+            $percentage = 0;
+            $data['discount'] = false;
+            if ($discount) {
+                $percentage = $discount->value;
+                $data['discount'] = true;
+            }
+            
+            $additionalDiscount = $data['installation_delivery_cost'] * ($percentage / 100);
+            $data['subtotal'] = number_format((float)$data['subtotal'], 3, '.', '');
+            $data['total'] = $data['total'] - $additionalDiscount;
+            
+            
+            $data['installation_delivery_cost'] = number_format((float)$data['installation_delivery_cost'], 3, '.', '');
+            $data['total'] = number_format((float)$data['total'], 3, '.', '');
+            
+            
+            $data['additional_discount'] = number_format((float)$additionalDiscount, 3, '.', '');
+            $address = UserAddress::select('id', 'latitude', 'longitude', 'extra_details')->where('id', $user->main_address_id)->first();
+            $data['address'] = "";
+            if ($address) {
+                $data['address'] = $address->extra_details;
+            }
+            
+            
+            $response = APIHelpers::createApiResponse(false , 200 , '' , '' , $data , $request->lang);
+            return response()->json($response , 200);
+        }else {
+            $response = APIHelpers::createApiResponse(true , 406 , 'Visitor is not exist' , 'Visitor is not exist' , null , $request->lang);
+            return response()->json($response , 406);
+        }
     }
 }

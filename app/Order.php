@@ -11,25 +11,15 @@ class Order extends Model
         'address_id', 
         'payment_method', 
         'subtotal_price', 
-        'delivery_cost', 
+        'delivery_cost', // delivery & installation cost
         'total_price', 
         'status',   // 1 => in progress
-                    // 2 => delivery service
-                    // 3 => delivered
-                    // 4 => canceled from user
-                    // 5 => refund request
-                    // 6 => refund accepted
-                    // 7 => refund refused
-                    // 9 => canceled from admin
         'order_number',
-        'store_id',
-        'from_deliver_date',
-        'to_deliver_date',
-        'country_code',
-        'main_id'
+        'follow_number',
+        'discount',
+        'expected_period',
+        'count'
     ];
-
-    protected $dates = ['from_deliver_date', 'to_deliver_date'];
 
     public function user() {
         return $this->belongsTo('App\User', 'user_id');
@@ -43,16 +33,38 @@ class Order extends Model
         return $this->belongsTo('App\UserAddress', 'address_id');
     }
 
-    public function main() {
-        return $this->belongsTo('App\MainOrder', 'main_id');
-    }
-
-    public function main_order_data() {
-        return $this->belongsTo('App\MainOrder', 'main_id')->select('id', 'main_order_number');
-    }
-
     public function items() {
         return $this->belongsToMany('App\Product', 'order_items', 'order_id', 'product_id')->select('*');
+    }
+
+    public function boughtOrders() {
+        return $this->hasMany('App\OrderItem', 'order_id')->select('id', 'product_id', 'final_price', 'count');
+    }
+
+    public function orders() {
+        $lang = session('language');
+        $orders = $this->boughtOrders()->get()->makeHidden('product');
+        
+        $orders->map(function ($row) use ($lang) {
+            
+            if ($lang == 'en') {
+                $row->product_name = $row->product->title_en;
+            }else {
+                $row->product_name = $row->product->title_ar;
+            }
+            
+            if ($row->product->main_image) {
+                
+                $row->main_image = $row->product->main_image->image;
+            }else {
+                $row->main_image = "";
+                if ($row->product->images) {
+                    $row->main_image = $row->product->images[0]->image;
+                }
+            }
+        });
+
+        return $orders;
     }
 
     public function products() {
@@ -75,7 +87,4 @@ class Order extends Model
         return $this->hasMany('App\OrderItem', 'order_id')->whereBetween('status', [5, 8]);
     }
 
-    public function store() {
-        return $this->belongsTo('App\Shop', 'store_id');
-    }
 }

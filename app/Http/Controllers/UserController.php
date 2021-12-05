@@ -21,20 +21,9 @@ class UserController extends Controller
 
     public function getprofile(Request $request){
         $user = auth()->user();
-        $returned_user['image'] = $user['image'];
         $returned_user['user_name'] = $user['name'];
         $returned_user['phone'] = $user['phone'];
         $returned_user['email'] = $user['email'];
-        $returned_user['join_date'] = $user['created_at']->format('d,m,Y');
-        $returned_user['vip_type'] = "";
-        if ($user->vip) {
-            if ($request->lang == 'en') {
-                $returned_user['vip_type'] = $user->vip->title_en;
-            }else {
-                $returned_user['vip_type'] = $user->vip->title_ar;
-            }
-        }
-        
         
 
         $response = APIHelpers::createApiResponse(false , 200 , '' , '' , $returned_user , $request->lang);
@@ -225,7 +214,7 @@ class UserController extends Controller
         return response()->json($response , 200);  
     }
 	
-	    protected function respondWithToken($token)
+    protected function respondWithToken($token)
     {
         return [
             'access_token' => $token,

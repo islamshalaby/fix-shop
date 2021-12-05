@@ -74,89 +74,40 @@ class FavoriteController extends Controller
     }
 
     public function getfavorites(Request $request){
-        if (!$request->header('uniqueid') || empty($request->header('uniqueid'))) {
-            $response = APIHelpers::createApiResponse(true , 406 , 'uniqueid required header' , 'uniqueid required header' , null , $request->lang);
-            return response()->json($response , 406);
-        }
-        $visitor = Visitor::where('unique_id', $request->header('uniqueid'))->select('country_code')->first();
-        if ($visitor && !empty($visitor->country_code)) {
-            $currency = $visitor->country->currency_en;
-            $toCurr = trim(strtolower($currency));
         
-            if ($toCurr == "usd") {
-                $currency = ["value" => 1];
-            }else {
-                $currency = Currency::where('from', "usd")->where('to', $toCurr)->first();
-            }
-
-            if (isset($currency['id'])) {
-                if (!$currency->updated_at->isToday()) {
-                    $result = APIHelpers::converCurruncy2("usd", $toCurr);
-                    if(isset($result['value'])){
-                        $currency->update(['value' => $result['value'], 'updated_at' => Carbon::now()]);
-                        $currency = Currency::where('from', "usd")->where('to', $toCurr)->first();
-                    }
-                    
-                }
-                
-            }else {
-                $result = APIHelpers::converCurruncy2("usd", $toCurr);
-                // dd($result);
-                if(isset($result['value']) && !$currency){
-                    $result = APIHelpers::converCurruncy2("usd", $toCurr);
-                    $currency = Currency::create(['value' => $result['value'], "from" => "usd", "to" => $toCurr]);
-                }
-            }
-            $user_id = auth()->user()->id;
-            $favorites = Favorite::where('user_id' , $user_id)->pluck('product_id')->toArray();
-            
-            if($request->lang == 'en'){
-                $products = Product::whereIn('id', $favorites)->where('deleted' , 0)
-                ->where('hidden' , 0)
-                ->where('remaining_quantity', '>', 0)
-                ->select('id', 'title_en as title' , 'final_price' , 'price_before_offer' , 'offer' , 'offer_percentage' , 'category_id' )
-                ->get()
-                ->makeHidden('images');
-            }else{
-                $products = Product::whereIn('id', $favorites)
-                ->where('deleted' , 0)
-                ->where('hidden' , 0)
-                ->where('remaining_quantity', '>', 0)
-                ->select('id', 'title_ar as title' , 'final_price' , 'price_before_offer' , 'offer' , 'offer_percentage' , 'category_id' )
-                ->get()
-                ->makeHidden('images');
-            }
-            
-            for($i =0 ; $i < count($products); $i++){
-                $products[$i]['favorite'] = true;
-                if($request->lang == 'en'){
-                    $products[$i]['category_name'] = Category::where('id' , $products[$i]['category_id'])->pluck('title_en as title')->first();
-                }else{
-                    $products[$i]['category_name'] = Category::where('id' , $products[$i]['category_id'])->pluck('title_ar as title')->first();
-                }
-                
-                $price = $products[$i]['final_price'] * $currency['value'];
-                $priceBOffer = $products[$i]['price_before_offer'] * $currency['value'];
-                $currencySympol = $visitor->country->currency_en;
-                if ($request->lang == 'ar') {
-                    $currencySympol = $visitor->country->currency_ar;
-                }
-                $products[$i]['final_price'] = number_format((float)$price, 3, '.', '') . " " . $currencySympol;
-                $products[$i]['price_before_offer'] = number_format((float)$priceBOffer, 3, '.', '') . " " . $currencySympol;
-                if ($products[$i]->main_image) {
-                    $products[$i]->main_image = $products[$i]->main_image->image;
-                }else {
-                    if (count($products[$i]->images) > 0) {
-                        $products[$i]->main_image = $products[$i]->images[0]->image;
-                    }
-                }
-            }
-            $response = APIHelpers::createApiResponse(false , 200 , '' , '' , $products , $request->lang);
-            return response()->json($response , 200);
-        }else {
-            $response = APIHelpers::createApiResponse(true , 406 , 'Visitor is not exist or code country is empty' , 'Visitor is not exist or code country is empty' , null , $request->lang);
-            return response()->json($response , 406);
+        $user_id = auth()->user()->id;
+        $favorites = Favorite::where('user_id' , $user_id)->pluck('product_id')->toArray();
+        
+        if($request->lang == 'en'){
+            $products = Product::whereIn('id', $favorites)->where('deleted' , 0)
+            ->where('hidden' , 0)
+            ->where('remaining_quantity', '>', 0)
+            ->select('id', 'title_en as title' , 'final_price' , 'price_before_offer' , 'offer' , 'offer_percentage' )
+            ->simplePaginate(20);
+            $products->makeHidden('images');
+        }else{
+            $products = Product::whereIn('id', $favorites)
+            ->where('deleted' , 0)
+            ->where('hidden' , 0)
+            ->where('remaining_quantity', '>', 0)
+            ->select('id', 'title_ar as title' , 'final_price' , 'price_before_offer' , 'offer' , 'offer_percentage')
+            ->simplePaginate(20);
+            $products->makeHidden('images');
         }
+        
+        $products->map(function ($row) {
+            if ($row->main_image) {
+                $row->main_image = $row->main_image->image;
+            }else {
+                $row->main_image = $row->images[0]->image;
+            }
+            
+
+            return $row;
+        });
+        $response = APIHelpers::createApiResponse(false , 200 , '' , '' , $products , $request->lang);
+        return response()->json($response , 200);
+        
     }
 
 }
