@@ -9,7 +9,7 @@
             <div class="row">
                 <div class="col-xl-12 col-md-12 col-sm-12 col-12">
                     <h4>{{ __('messages.order_details') }} 
-                        ( <a style="color: #1b55e2" target="_blank" href="{{ route('orders.invoice', $data['order']['id']) }}">
+                        ( <a style="color: #1b55e2" target="_blank" href="{{ route('webview.invoice', $data['order']['id']) }}">
                             {{ __('messages.invoice') }}
                         </a> )
                     </h4>
@@ -26,6 +26,13 @@
                                 {{ $data['order']['order_number'] }}
                             </td>
                         </tr>
+                        <tr>
+                            <td class="label-table" > {{ __('messages.follow_number') }}</td>
+                            <td>
+                                {{ $data['order']['follow_number'] }}
+                            </td>
+                        </tr>
+                        
                         <tr>
                             <td class="label-table" > {{ __('messages.invoice') }}</td>
                             <td>
@@ -58,14 +65,25 @@
                         <tr>
                             <td class="label-table" > {{ __('messages.price') }} </td>
                             <td>
-                                {{ $data['order']['subtotal_price'] . " " . __('messages.usd') }}
+                                {{ $data['order']['subtotal_price'] . " " . __('messages.ryal') }}
                             </td>
                         </tr>  
-                        
+                        <tr>
+                            <td class="label-table" > {{ __('messages.delivery_installation_cost') }} </td>
+                            <td>
+                                {{ $data['order']['delivery_cost'] . " " . __('messages.ryal') }}
+                            </td>
+                        </tr>  
+                        <tr>
+                            <td class="label-table" > {{ __('messages.discount') }} </td>
+                            <td>
+                                {{ $data['order']['discount'] . " " . __('messages.ryal') }}
+                            </td>
+                        </tr>  
                         <tr>
                             <td class="label-table" > {{ __('messages.total') }} </td>
                             <td>
-                                {{ $data['order']['total_price'] . " " . __('messages.usd') }}
+                                {{ $data['order']['total_price'] . " " . __('messages.ryal') }}
                             </td>
                         </tr>
                        
@@ -77,7 +95,6 @@
                         <tr>
                             <th>{{ __('messages.product') }}</th>
                             <th>{{ __('messages.product_price') }}</th>
-                            <th>{{ __('messages.serial_number') }}</th>
                             <th>{{ __('messages.count') }}</th>
                         </tr>
                     </thead>
@@ -91,13 +108,6 @@
                             </td>
                             <td>
                                 {{ $item->product->final_price . " " . __('messages.usd') }}
-                            </td>
-                            <td>
-                                @if (count($item->serials) > 0)
-                                @foreach ($item->serials as $serial)
-                                <span class="badge outline-badge-warning">{{ $serial->serial }}</span>
-                                @endforeach
-                                @endif
                             </td>
                             <td>
                                 {{ $item->count }}

@@ -215,7 +215,7 @@
         "order_number" => "Order Number",
         "order_date" => "Order Date",
         "payment_method" => "Payment Method",
-        "total" => "Total",
+        "total" => "Total with delivery and installation",
         "key_net" => "Key Net",
         "key_net_from_home" => "Key Net From Home",
         "cash" => "Cash",
@@ -659,6 +659,12 @@
         "discount_systems" => "Discount Systems",
         "add_new_discount" => "Add new discount",
         "discount_percentage" => "Discount percentage",
-        "edit_discount" => "Edit discount"
+        "edit_discount" => "Edit discount",
+        "delivery_installation_cost" => "Delivery & installation",
+        "ryal" => "SAR",
+        "order_updated" => "Order status updated successfully",
+        "follow_number" => "Follow number",
+        "close_order" => "Close order",
+        "cancel_order" => "Cancel order"
     ];
 ?>

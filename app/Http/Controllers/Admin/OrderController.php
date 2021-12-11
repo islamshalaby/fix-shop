@@ -22,12 +22,29 @@ class OrderController extends AdminController{
         if ($request->to) {
             $data['orders'] = $data['orders']->whereBetween('orders.created_at', array($request->from, $request->to));
         }
+        if ($request->order_status2) {
+            if ($request->order_status2 == 'opened') {
+                $data['orders'] = $data['orders']->where('status', 1);
+            }else {
+                $data['orders'] = $data['orders']->whereIn('status', [2, 3]);
+            }
+        }
         $data['sum_price'] = $data['orders']->sum('subtotal_price');
         $data['sum_delivery'] = $data['orders']->sum('delivery_cost');
         $data['sum_total'] = $data['orders']->sum('total_price');
         $data['orders'] = $data['orders']->get();
         
         return view('admin.orders' , ['data' => $data]);
+    }
+
+    // update status
+    public function updateStatus(Order $order, $status) {
+        $order->status = $status;
+        $order->save();
+        OrderItem::where('order_id', $order->id)->update(['status' => $status]);
+
+        return redirect()->back()
+        ->with('success', __('messages.order_updated'));
     }
 
     // get sub orders
@@ -82,45 +99,32 @@ class OrderController extends AdminController{
     // get delivery reports
     public function showDeliveryReports(Request $request) {
         if (isset($request->order_status)) {
-            $statusArray = [1, 2, 5];
+            $status = 1;
             if ($request->order_status == 'delivered') {
-                $statusArray = [3, 6, 7];
+                $status = 2;
             }
             $data['order_status'] = $request->order_status;
-            $data['orders'] = Order::whereIn('status', $statusArray)->orderBy('id' , 'desc');
+            $data['orders'] = Order::where('status', $status)->orderBy('id' , 'desc');
         }else{
-            $data['orders'] = Order::join('user_addresses', 'user_addresses.id', '=', 'orders.address_id')->whereIn('status', [1, 2, 5, 3 ,6, 7]);
-            if(isset($request->area_id)){
-                $data['area'] = Area::where('id', $request->area_id)->select('id', 'title_en', 'title_ar')->first();
-                $data['area_id'] = $request->area_id;
-                $data['orders'] = $data['orders']
-                ->where('area_id', $request->area_id);
-            }
+            $data['orders'] = Order::whereIn('status', [1, 2])->orderBy('id', 'desc');
+            
             if(isset($request->from) && isset($request->to)){
                 $data['from'] = $request->from;
                 $data['to'] = $request->to;
                 $data['orders'] = $data['orders']->whereBetween('orders.created_at', array($request->from, $request->to));
             }
-            if(isset($request->method)){
-                $data['method'] = $request->method;
-                $data['orders'] = $data['orders']->where('orders.payment_method', $request->method);
-            }
+            
             if(isset($request->order_status2)){
                 $data['order_status2'] = $request->order_status2;
                 $data['orders'] = $data['orders']->where('status', $request->order_status2);
             }
-            if(isset($request->shop)){
-                $data['shop'] = $request->shop;
-                $data['orders'] = $data['orders']->where('orders.store_id', $request->shop);
-            }
+            
         }
         
-        $data['shops'] = Shop::orderBy('name', 'desc')->get();
-        $data['areas'] = Area::where('deleted', 0)->orderBy('title_ar', 'asc')->get();
         $data['sum_price'] = $data['orders']->sum('subtotal_price');
         $data['sum_delivery'] = $data['orders']->sum('delivery_cost');
         $data['sum_total'] = $data['orders']->sum('total_price');
-        $data['orders'] = $data['orders']->select('orders.*')->orderBy('orders.id', 'desc')->get();
+        $data['orders'] = $data['orders']->get();
 
         return view('admin.delivery_reports' , ['data' => $data]);
     }
@@ -128,36 +132,18 @@ class OrderController extends AdminController{
     // show products orders
     public function showProductsOrders(Request $request) {
         $data['orders'] = OrderItem::join('orders', 'orders.id', '=', 'order_items.order_id');
-        if(isset($request->area_id)){
-            $data['area'] = Area::where('id', $request->area_id)->select('id', 'title_en', 'title_ar')->first();
-            $data['area_id'] = $request->area_id;
-            $data['orders'] = $data['orders']
-            ->leftjoin('user_addresses', function($join) {
-                $join->on('user_addresses.id', '=', 'orders.address_id');
-            })
-            ->where('area_id', $request->area_id);
-        }
+        
         if(isset($request->from) && isset($request->to)){
             $data['from'] = $request->from;
             $data['to'] = $request->to;
             $data['orders'] = $data['orders']->whereBetween('order_items.created_at', array($request->from, $request->to));
         }
-        if(isset($request->method)){
-            $data['method'] = $request->method;
-            $data['orders'] = $data['orders']
-            ->where('orders.payment_method', $request->method);
-        }
+        
         if(isset($request->order_status2)){
             $data['order_status2'] = $request->order_status2;
             $data['orders'] = $data['orders']->where('order_items.status', $request->order_status2);
         }
-        if(isset($request->shop)){
-            $data['shop'] = $request->shop;
-            $data['orders'] = $data['orders']
-            ->where('orders.store_id', $request->shop);
-        }
-        $data['shops'] = Shop::orderBy('name', 'desc')->get();
-        $data['areas'] = Area::where('deleted', 0)->orderBy('title_ar', 'asc')->get();
+        
         $data['sum_price'] = $data['orders']->sum('final_price');
         $data['sum_price'] = number_format((float)$data['sum_price'], 3, '.', '');
         $data['orders'] = $data['orders']->select('order_items.*')->orderBy('id', 'desc')->get();
@@ -166,7 +152,7 @@ class OrderController extends AdminController{
             $data['sum_total'] = $data['sum_total'] + ($data['orders'][$i]['final_price'] * $data['orders'][$i]['count']);
         }
         $data['sum_total'] = number_format((float)$data['sum_total'], 3, '.', '');
-        // dd($data['orders']);
+        
 
         return view('admin.products_orders' , ['data' => $data]);
     }

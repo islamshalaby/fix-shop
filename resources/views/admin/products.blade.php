@@ -156,12 +156,12 @@
                                 </td>
                                 <td>
                                     @if ($product->recent_offers == 1)
-                                    <a href="{{ route('products.offer.update_action', [$product->id, 0]) }}">
-                                        {{ __('messages.delete') }} <i class="fa fa-minus" aria-hidden="true"></i>
+                                    <a class="btn btn-danger  mb-2 mr-2 rounded-circle" href="{{ route('products.offer.update_action', [$product->id, 0]) }}">
+                                        <i class="fa fa-minus" aria-hidden="true"></i>
                                     </a>
                                     @else
-                                    <a href="{{ route('products.offer.update_action', [$product->id, 1]) }}">
-                                        {{ __('messages.add') }} <i class="fa fa-plus" aria-hidden="true"></i>
+                                    <a class="btn btn-primary  mb-2 mr-2 rounded-circle" href="{{ route('products.offer.update_action', [$product->id, 1]) }}">
+                                        <i class="fa fa-plus" aria-hidden="true"></i>
                                     </a>
                                     @endif
                                 </td>

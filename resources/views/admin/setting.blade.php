@@ -107,13 +107,16 @@
             <label for="address_ar">{{ __('messages.about_desc') }}</label>
             <input  type="text" name="about_desc" class="form-control" id="about_desc" placeholder="{{ __('messages.about_desc') }}" value="{{$data['setting']['about_desc']}}" >
         </div>
-        <div id='map' style='width: 400px; height: 300px;'></div>
-        <div class="calculation-box">
-        <p>Click the map to draw a polygon.</p>
-        <div id="calculated-area"></div>
+        <div class="row">
+            <div id='map' style='width: 100%; height: 300px;'></div>
+            <div class="calculation-box">
+                <p>حدد النقاط على الخريطة</p>
+                <div id="calculated-area"></div>
+                </div>
+                <div id="latlngbox"></div>
+            </div>
         </div>
-        <div id="latlngbox"></div>
-        </div>
+        
         
         <div class="form-group mb-4">
             <label for="address_ar">{{ __('messages.about_footer') }}</label>
@@ -125,14 +128,13 @@
 </div>
 @endsection
 @push('scripts') 
-    
     <script>
         mapboxgl.accessToken = 'pk.eyJ1IjoiZml4LXNob3AiLCJhIjoiY2t1M3c5Z3VvNGttNTJvbXA2cmRoemhvbiJ9.ZnPPvqfazzjy4YmjcxiuJQ';
         const map = new mapboxgl.Map({
             container: 'map', // container ID
             style: 'mapbox://styles/mapbox/streets-v9',
-            center: [48.6569611 , 29.3093892],
-            zoom: 6 // starting zoom
+            center: [47.5133068 , 25.6017925],
+            zoom: 4 // starting zoom
             });
             
             const draw = new MapboxDraw({
@@ -146,6 +148,14 @@
             // The user does not have to click the polygon control button first.
             defaultMode: 'draw_polygon'
         });
+        //Add the control to the map.
+        map.addControl(
+        new MapboxGeocoder({
+        accessToken: mapboxgl.accessToken,
+        mapboxgl: mapboxgl
+        })
+        );
+        
         map.addControl(draw);
         map.addControl(new mapboxgl.FullscreenControl());
         map.on('draw.create', updateArea);

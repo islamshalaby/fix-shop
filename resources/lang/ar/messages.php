@@ -218,11 +218,11 @@
             "order_number" => "رقم الطلب",
             "order_date" => "تاريخ الطلب",
             "payment_method" => "طريقة الدفع",
-            "total" => "الإجمالى",
+            "total" => "الإجمالى بالتركيب والتوصيل",
             "key_net" => "كى نت",
             "key_net_from_home" => "كى نت من البيت",
             "cash" => "نقداً",
-            "in_progress" => "الطلب قيد التنفيذ",
+            "in_progress" => "الطلب جارى",
             "delivered" => "تم التسليم",
             "canceled" => "ملغى",
             "orders" => "الطلبات",
@@ -664,6 +664,12 @@
             "discount_systems" => "أنظمة الخصم",
             "add_new_discount" => "إضافة خصم جديد",
             "discount_percentage" => "قيمة الخصم",
-            "edit_discount" => "تعديل الخصم"
+            "edit_discount" => "تعديل الخصم",
+            "delivery_installation_cost" => "التوصيل والتركيب",
+            "ryal" => "ريال",
+            "order_updated" => "تم تحديث حالة الطلب",
+            "follow_number" => "رقم المتابعة",
+            "close_order" => "إغلاق الطلب",
+            "cancel_order" => "إلغاء الطلب"
         ];
 ?>

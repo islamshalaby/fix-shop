@@ -275,6 +275,8 @@ Route::group([
         "prefix" => "orders"
     ], function($router){
          Route::get('show' , 'OrderController@show')->name('orders.index');
+         Route::get('update-status/{order}/{status}' , 'OrderController@updateStatus')->name('orders.update.status');
+         
          Route::get('sub-orders' , 'OrderController@showSubOrders')->name('orders.subOrders.index');
          Route::get('delivery-reports' , 'OrderController@showDeliveryReports')->name('orders.deliveryReports.index');
          Route::get('products-orders' , 'OrderController@showProductsOrders')->name('orders.productsOrders.index');

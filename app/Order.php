@@ -14,6 +14,7 @@ class Order extends Model
         'delivery_cost', // delivery & installation cost
         'total_price', 
         'status',   // 1 => in progress
+                    // 2 => delivered
         'order_number',
         'follow_number',
         'discount',

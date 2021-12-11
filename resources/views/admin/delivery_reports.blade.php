@@ -88,14 +88,17 @@ $url = 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
         var price = dTbls.column(8).data(),
             delivery = dTbls.column(9).data(),
             total = dTbls.column(10).data(),
-            dinar = "{{ __('messages.dinar') }}"
+            discount = dTbls.column(7).data(),
+            ryal = "{{ __('messages.ryal') }}"
         var totalPrice = parseFloat(price.reduce(function (a, b) { return parseFloat(a) + parseFloat(b); }, 0)).toFixed(3),
             totalDelivery = parseFloat(delivery.reduce(function (a, b) { return parseFloat(a) + parseFloat(b); }, 0)).toFixed(3),
-            allTotal = parseFloat(total.reduce(function (a, b) { return parseFloat(a) + parseFloat(b); }, 0)).toFixed(3)
+            allTotal = parseFloat(total.reduce(function (a, b) { return parseFloat(a) + parseFloat(b); }, 0)).toFixed(3),
+            totalDiscount = parseFloat(discount.reduce(function (a, b) { return parseFloat(a) + parseFloat(b); }, 0)).toFixed(3)
 
-        $("#order-tbl tfoot").find('th').eq(8).text(`${totalPrice} ${dinar}`);
-        $("#order-tbl tfoot").find('th').eq(9).text(`${totalDelivery} ${dinar}`);
-        $("#order-tbl tfoot").find('th').eq(10).text(`${allTotal} ${dinar}`);
+        $("#order-tbl tfoot").find('th').eq(7).text(`${totalDiscount} ${ryal}`);
+        $("#order-tbl tfoot").find('th').eq(8).text(`${totalPrice} ${ryal}`);
+        $("#order-tbl tfoot").find('th').eq(9).text(`${totalDelivery} ${ryal}`);
+        $("#order-tbl tfoot").find('th').eq(10).text(`${allTotal} ${ryal}`);
     </script>
     
 @endpush
@@ -105,7 +108,7 @@ $url = 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
         <div class="statbox widget box box-shadow">
             <div class="col-lg-12 filtered-list-search mx-auto">
                 <div class="btn-group" role="group" aria-label="Basic example">
-                    <a href="{{ route('orders.subOrders.index') }}" type="button" class="btn btn-{{ ( strpos($url,'delivery-reports') !== false && !isset($data['order_status']) ) || strpos($url,'fetchbydate') !== false ? 'light' : 'dark' }}">{{ __('messages.all_orders') }}</a>
+                    <a href="{{ route('orders.deliveryReports.index') }}" type="button" class="btn btn-{{ ( strpos($url,'delivery-reports') !== false && !isset($data['order_status']) ) || strpos($url,'fetchbydate') !== false ? 'light' : 'dark' }}">{{ __('messages.all_orders') }}</a>
                     <a href="?order_status=in_progress" type="button" class="btn btn-{{ isset($data['order_status']) && $data['order_status'] == 'in_progress' ? 'light' : 'dark' }}">{{ __('messages.inprogress_orders') }}</a>
                     <a href="?order_status=delivered" type="button" class="btn btn-{{ isset($data['order_status']) && $data['order_status'] == 'delivered' ? 'light' : 'dark' }}">{{ __('messages.delivered_orders') }}</a>
                 </div>
@@ -113,17 +116,7 @@ $url = 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
             <div class="widget-content widget-content-area">
                 <form id="filter-form">
                     <div class="row">
-                        <div class="form-group col-md-3">
-                            
-                            <label for="area">{{ __('messages.area') }}</label>
-                            <select required id="area_select" name="area_id" class="form-control">
-                                <option disabled selected>{{ __('messages.select') }}</option>
-                                @foreach ( $data['areas'] as $area )
-                                <option {{ isset($data['area']) && $data['area']['id'] == $area->id ? 'selected' : '' }} value="{{ $area->id }}">{{ App::isLocale('en') ? $area->title_en : $area->title_ar }}</option>
-                                @endforeach 
-                            </select>
-
-                        </div>
+                        
                         <div class="form-group col-md-6">
                         
                             <div class="form-group mb-4">
@@ -141,32 +134,6 @@ $url = 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
 
                         </div>
 
-                        <div class="form-group col-md-3">
-                            
-                            <label for="payment_select">{{ __('messages.payment_method') }}</label>
-                            <select required id="payment_select" name="method" class="form-control">
-                                <option disabled selected>{{ __('messages.select') }}</option>
-                                
-                                <option {{ isset($data['method']) && $data['method'] == 1 ? 'selected' : '' }} value="1">{{ __('messages.key_net') }}</option>
-                                <option {{ isset($data['method']) && $data['method'] == 2 ? 'selected' : '' }} value="2">{{ __('messages.cash') }}</option>
-                                <option {{ isset($data['method']) && $data['method'] == 3 ? 'selected' : '' }} value="3">{{ __('messages.wallet') }}</option>
-                                
-                            </select>
-                        </div>
-
-                        <div class="form-group col-md-3">
-                            
-                            <label for="payment_select">{{ __('messages.store') }}</label>
-                            <select required id="shop_select" name="shop" class="form-control">
-                                <option disabled selected>{{ __('messages.select') }}</option>
-                                @foreach ($data['shops'] as $shop)
-                                <option {{ isset($data['shop']) && $data['shop'] == $shop->id ? 'selected' : '' }} value="{{ $shop->id }}">{{ $shop->name }}</option>
-                                @endforeach
-                                
-                            </select>
-                                    
-                            
-                        </div>
                     </div>
                 </form>
         
@@ -175,37 +142,24 @@ $url = 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
             <div class="widget-header">
             <div class="row">
                 <div class="col-xl-12 col-md-12 col-sm-12 col-12">
-                    <h4>{{ __('messages.show_delivery_reports') }} 
-                        @if (isset($data['area']))
-                            @if(App::isLocale('en'))
-                                {{ "( " . $data['area']['title_en'] . " )" }}
-                            @else
-                                {{ "( " . $data['area']['title_ar'] . " )" }}
-                            @endif
-                        @endif
-                        <button data-show="0" class="btn btn-primary show_actions">{{ __('messages.hide_actions') }}</button>
+                    <h4>
+                        {{ __('messages.show_delivery_reports') }} 
                     </h4>
                     @php
                         $queryArray = [];
                         if (isset($data['order_status'])) {
                             $queryArray['order_status'] = $data['order_status'];
                         }
-                        if(isset($data['area_id'])) {
-                            $queryArray['area_id'] = $data['area_id'];
-                        }
+                        
                         if(isset($data['from']) && isset($data['to'])) {
                             $queryArray['from'] = $data['from'];
                             $queryArray['to'] = $data['to'];
                         }
-                        if(isset($data['method'])) {
-                            $queryArray['method'] = $data['method'];
-                        }
+                        
                         if(isset($data['order_status2'])) {
                             $queryArray['order_status2'] = $data['order_status2'];
                         }
-                        if(isset($data['shop'])) {
-                            $queryArray['shop'] = $data['shop'];
-                        }
+                        
                     @endphp
                     <a href="{{ route('webview.deliveryReport', $queryArray) }}" target="_blank" class="btn btn-primary">{{ __('messages.print') . ' ' . __('messages.delivery_reports') }}</a>
                 </div>
@@ -217,16 +171,16 @@ $url = 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
                     <thead>
                         <tr>
                             <th>id</th>
-                            <th>{{ __('messages.sub_order_number') }}</th>
+                            <th>{{ __('messages.order_number') }}</th>
+                            <th>{{ __('messages.follow_number') }}</th>
                             <th>{{ __('messages.order_date') }}</th>
                             <th>{{ __('messages.delivery_date') }}</th>
                             <th>{{ __('messages.user') }}</th>
-                            <th>{{ __('messages.store') }}</th>
-                            <th>{{ __('messages.payment_method') }}</th>
                             <th>{{ __('messages.status') }}</th>
+                            <th>{{ __('messages.delivery_installation_cost') }}</th>
+                            <th>{{ __('messages.discount') }}</th>
                             <th>{{ __('messages.price') }}</th>
-                            <th>{{ __('messages.delivery_cost') }}</th>
-                            <th>{{ __('messages.total_with_delivery') }}</th>
+                            <th>{{ __('messages.total') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -236,9 +190,10 @@ $url = 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
                             <tr>
                                 <td><?=$i;?></td>
                                 <td>{{ $order->order_number }}</td>
+                                <td>{{ $order->follow_number }}</td>
                                 <td>{{ $order->created_at->format("d-m-y") }}</td>
                                 <td>
-                                    @if($order->status == 3)
+                                    @if($order->status == 2)
                                     {{ $order->updated_at->format("d-m-y") }}
                                     @else
                                     {{ __('messages.inprogress') }}
@@ -249,40 +204,26 @@ $url = 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
                                     {{ $order->user->name }}
                                     </a>
                                 </td>
+                                
                                 <td>
-                                    <a target="_blank" href="{{ route('shops.details', $order->store_id) }}">
-                                    {{ $order->store->name }}
-                                    </a>
-                                </td>
-                                <td>
-                                    @if($order->payment_method == 1)
-                                    {{ __('messages.key_net') }}
-                                    @elseif ($order->payment_method == 2)
-                                    {{ __('messages.cash') }}
-                                    @else
-                                    {{ __('messages.wallet') }}
-                                    @endif
-                                </td>
-                                <td>
-                                    @if (in_array($order->status, [1, 2, 5]))
+                                    @if ($order->status == 1)
                                     {{ __('messages.inprogress') }}
-                                    @elseif(in_array($order->status, [3, 6, 7]))
+                                    @elseif($order->status == 2)
                                     {{ __('messages.delivered') }}
                                     @endif
                                 </td>
-                                <td>{{ $order->subtotal_price . " " . __('messages.dinar') }}</td>
-                                <td>{{ $order->delivery_cost . " " . __('messages.dinar') }}</td>
-                                <td>{{ $order->total_price . " " . __('messages.dinar') }}</td>
+                                <td>{{ $order->delivery_cost . " " . __('messages.ryal') }}</td>
+                                <td>{{ $order->discount . " " . __('messages.ryal') }}</td>
+                                <td>{{ $order->subtotal_price . " " . __('messages.ryal') }}</td>
+                                <td>{{ $order->total_price . " " . __('messages.ryal') }}</td>
                                 
-                                {{--  <td class="text-center blue-color hide_col"><a href="{{ route('orders.sub_order.details', $order->id) }}" ><i class="far fa-eye"></i></a></td>
-                                <td class="text-center blue-color hide_col"><a target="_blank" href="{{ route('webview.store.invoice', $order->id) }}" ><i class="far fa-eye"></i></a></td>  --}}
                             </tr>
                             <?php $i ++ ?>
                         @endforeach
                     </tbody>
                     <tfoot>
                         <tr>
-                          <th>{{ __('messages.total') }}:</th>
+                          <th>{{ __('messages.price') }}:</th>
                           <th></th>
                           <th></th>
                           <th></th>

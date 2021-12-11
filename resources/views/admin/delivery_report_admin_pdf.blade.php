@@ -16,7 +16,7 @@
                     <table style="width: 100%;line-height: inherit;text-align: right;">
                         <tr>
                             <td class="title" style="padding: 5px;vertical-align: top;padding-bottom: 20px;font-size: 45px;text-align: center;line-height: 20px;color: #333;">
-                                <img src="https://res.cloudinary.com/dezsm0sg7/image/upload/h_300,w_300/v1581928924/{{ $data['setting']['logo'] }}" style="width:100px; max-width:300px;">
+                                <img src="https://res.cloudinary.com/{{ cloudinary_app_name() }}/image/upload/h_300,w_300/v1581928924/{{ $data['setting']['logo'] }}" style="width:100px; max-width:300px;">
                             </td>
                             
                             
@@ -31,48 +31,22 @@
                                         {{ __('messages.in_progress') }}
                                         @endif
                                     @endif
-                                    @if(isset($data['area']))
-                                    {{ $data['area']['title_ar'] }}
-                                    @endif
+                                    
                                     @if(isset($data['from']) && isset($data['to']))
                                     - {{ '( ' . $data['from'] . " | " . $data['to'] . ' )' }}
                                     @endif
-                                    @if(isset($data['method']))
-                                    - 
-                                        @if($data['method'] == 1)
-                                        {{ __('messages.key_net') }}
-                                        @elseif ($data['method'] == 2)
-                                        {{ __('messages.cash') }}
-                                        @else
-                                        {{ __('messages.wallet') }}
-                                        @endif
-                                    @endif
+                                    
                                     @if(isset($data['order_status2']))
                                     - 
                                         @if ($data['order_status2'] == 1)
                                         {{ __('messages.in_progress') }}
                                         @elseif($data['order_status2'] == 2)
-                                        {{ __('messages.order_confirmed') }}
-                                        @elseif($data['order_status2'] == 3)
                                         {{ __('messages.delivered') }}
-                                        @elseif($data['order_status2'] == 4)
-                                        {{ __('messages.canceled_from_user') }}
-                                        @elseif($data['order_status2'] == 5)
-                                        {{ __('messages.refund_request') }}
-                                        @elseif($data['order_status2'] == 6)
-                                        {{ __('messages.refund_accepted') }}
-                                        @elseif($data['order_status2'] == 7)
-                                        {{ __('messages.refund_rejected') }}
-                                        @elseif($data['order_status2'] == 8)
-                                        {{ __('messages.received_refund') }}
-                                        @elseif($data['order_status2'] == 9)
+                                        @else
                                         {{ __('messages.canceled_from_admin') }}
                                         @endif
                                     @endif
-                                    @if(isset($data['shop']))
-                                    - 
-                                    {{ $data['shop_name']['name'] }}
-                                    @endif
+                                    
                                 </b>
                             </td>
                             
@@ -138,31 +112,38 @@
                     ID
                 </td>
                 <td style="padding: 5px;vertical-align: top;text-align:center;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
-                    {{ __('messages.sub_order_number') }}
+                    {{ __('messages.order_number') }}
+                </td>
+                <td style="padding: 5px;vertical-align: top;text-align:center;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
+                    {{ __('messages.follow_number') }}
                 </td>
                 <td style="padding: 5px;vertical-align: top;text-align:center;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
                     {{ __('messages.order_date') }}
                 </td>
                 <td style="padding: 5px;vertical-align: top;text-align:center;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
+                    {{ __('messages.delivery_date') }}
+                </td>
+                
+                <td style="padding: 5px;vertical-align: top;text-align:center;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
                     {{ __('messages.user') }}
                 </td>
-                <td style="padding: 5px;vertical-align: top;text-align:center;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
-                    {{ __('messages.store') }}
-                </td>
-                <td style="padding: 5px;vertical-align: top;text-align:center;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
-                    {{ __('messages.payment_method') }}
-                </td>
+                
                 <td style="padding: 5px;vertical-align: top;text-align:center;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
                     {{ __('messages.status') }}
                 </td>
                 <td style="padding: 5px;vertical-align: top;text-align:center;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
-                    {{ __('messages.price') }}
+                    {{ __('messages.delivery_installation_cost') }}
                 </td>
                 <td style="padding: 5px;vertical-align: top;text-align:center;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
-                    {{ __('messages.delivery_cost') }}
+                    {{ __('messages.discount') }}
                 </td>
+                
+                <td style="padding: 5px;vertical-align: top;text-align:center;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
+                    {{ __('messages.price') }}
+                </td>
+                
                 <td style="padding: 5px;vertical-align: top;text-align: center;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
-                    {{ __('messages.total_with_delivery') }}
+                    {{ __('messages.total') }}
                 </td>
             </tr>
             @if ($data['orders'])
@@ -176,38 +157,40 @@
                     {{ $order->order_number }}
                 </td>
                 <td style="padding: 5px;vertical-align: top;text-align: center;border-bottom: 1px solid #eee;">
+                    {{ $order->follow_number }}
+                </td>
+                <td style="padding: 5px;vertical-align: top;text-align: center;border-bottom: 1px solid #eee;">
                     {{ $order->created_at->format("d-m-y") }}
+                </td>
+                <td style="padding: 5px;vertical-align: top;text-align: center;border-bottom: 1px solid #eee;">
+                    @if($order->status == 2)
+                    {{ $order->updated_at->format("d-m-y") }}
+                    @else
+                    {{ __('messages.inprogress') }}
+                    @endif
                 </td>
                 <td style="padding: 5px;vertical-align: top;text-align: center;border-bottom: 1px solid #eee;">
                     {{ $order->user->name }}
                 </td>
+                
                 <td style="padding: 5px;vertical-align: top;text-align: center;border-bottom: 1px solid #eee;">
-                    {{ $order->store->name }}
-                </td>
-                <td style="padding: 5px;vertical-align: top;text-align: center;border-bottom: 1px solid #eee;">
-                    @if($order->payment_method == 1)
-                    {{ __('messages.key_net') }}
-                    @elseif ($order->payment_method == 2)
-                    {{ __('messages.cash') }}
-                    @else
-                    {{ __('messages.wallet') }}
-                    @endif
-                </td>
-                <td style="padding: 5px;vertical-align: top;text-align: center;border-bottom: 1px solid #eee;">
-                    @if (in_array($order->status, [1, 2, 5]))
+                    @if ($order->status == 1)
                     {{ __('messages.inprogress') }}
-                    @elseif(in_array($order->status, [3, 6, 7]))
+                    @elseif($order->status == 2)
                     {{ __('messages.delivered') }}
                     @endif
                 </td>
                 <td style="padding: 5px;vertical-align: top;text-align: center;border-bottom: 1px solid #eee;">
-                    {{ $order->subtotal_price . " " . __('messages.dinar') }}
+                    {{ $order->delivery_cost . " " . __('messages.ryal') }}
                 </td>
                 <td style="padding: 5px;vertical-align: top;text-align: center;border-bottom: 1px solid #eee;">
-                    {{ $order->delivery_cost . " " . __('messages.dinar') }}
+                    {{ $order->discount . " " . __('messages.ryal') }}
                 </td>
                 <td style="padding: 5px;vertical-align: top;text-align: center;border-bottom: 1px solid #eee;">
-                    {{ $order->total_price . " " . __('messages.dinar') }}
+                    {{ $order->subtotal_price . " " . __('messages.ryal') }}
+                </td>
+                <td style="padding: 5px;vertical-align: top;text-align: center;border-bottom: 1px solid #eee;">
+                    {{ $order->total_price . " " . __('messages.ryal') }}
                 </td>
             </tr>
             <?php $i ++; ?>
@@ -216,7 +199,7 @@
             
             <tr class="heading">
                 <td style="padding: 5px;text-align:center;vertical-align: top;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
-                    {{ __('messages.total') }}
+                    {{ __('messages.price') }}
                 </td>
                 <td style="padding: 5px;text-align:center;vertical-align: top;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
                     
@@ -236,11 +219,17 @@
                 <td style="padding: 5px;text-align:center;vertical-align: top;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
                     
                 </td>
-                <td style="padding: 5px;text-align:center;vertical-align: top;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
-                    {{ $data['sum_subtotal'] . " " . __('messages.dinar') }}
-                </td>
+                
                 <td style="padding: 5px;text-align:center;vertical-align: top;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
                     {{ $data['sum_delivery_cost'] . " " . __('messages.dinar') }}
+                </td>
+                
+                <td style="padding: 5px;text-align:center;vertical-align: top;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
+                    {{ $data['sum_discount'] . " " . __('messages.dinar') }}
+                </td>
+                
+                <td style="padding: 5px;text-align:center;vertical-align: top;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
+                    {{ $data['sum_subtotal'] . " " . __('messages.dinar') }}
                 </td>
                 <td style="padding: 5px;text-align:center;vertical-align: top;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
                     {{ $data['sum_total_price'] . " " . __('messages.dinar') }}

@@ -21,6 +21,7 @@
                             
                             <td style="padding: 5px;vertical-align: top;text-align: left;padding-bottom: 20px;">
                                 {{ __('messages.invoice') }} : {{ $data['order']['order_number'] }}<br>
+                                {{ __('messages.follow_number') }} : {{ $data['order']['follow_number'] }}<br>
                                 {{ __('messages.date') }}: {{ $data['order']['created_at']->format("d-m-y") }}<br>
                             </td>
                         </tr>
@@ -35,7 +36,7 @@
                             <td style="padding: 5px;vertical-align: top;padding-bottom: 40px;">
                                 <h4 style="margin-bottom: 50px;">{{ __('messages.customer_data') }}</h4><br>
                                 {{ $data['order']->user->name }}<br>
-                                
+                                <b>{{ __('messages.address') }} :</b> {{ $data['order']->address->extra_details }}
                             </td>
                             
                             <td style="padding: 5px;vertical-align: top;text-align: left;padding-bottom: 40px;">
@@ -59,9 +60,7 @@
                 <td style="padding: 5px;vertical-align: top;text-align:center;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
                     {{ __('messages.quantity') }}
                 </td>
-                <td style="padding: 5px;vertical-align: top;text-align:center;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
-                    {{ __('messages.serial_number') }}
-                </td>
+                
                 <td style="padding: 5px;vertical-align: top;text-align:center;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
                     {{ __('messages.price_before_discount') }}
                 </td>
@@ -69,7 +68,11 @@
                     {{ __('messages.price_after_discount') }}
                 </td>
                 <td style="padding: 5px;vertical-align: top;text-align:center;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
-                    {{ __('messages.total') }}
+                    {{ __('messages.delivery_installation_cost') }}
+                </td>
+                
+                <td style="padding: 5px;vertical-align: top;text-align:center;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
+                    {{ __('messages.price') }}
                 </td>
                 
             </tr>
@@ -85,34 +88,55 @@
                 <td style="padding: 5px;vertical-align: top;text-align: center;border-bottom: 1px solid #eee;">
                     {{ $item->count }}
                 </td>
+                
                 <td style="padding: 5px;vertical-align: top;text-align: center;border-bottom: 1px solid #eee;">
-                    @if (count($item->serials) > 0)
-                    @foreach ($item->serials as $serial)
-                        [ {{ $serial->serial }} ] 
-                    @endforeach
-                    @endif
+                    {{ $item->price_before_offer }} {{ __('messages.ryal') }}
                 </td>
                 <td style="padding: 5px;vertical-align: top;text-align: center;border-bottom: 1px solid #eee;">
-                    {{ $item->price_before_offer }} {{ __('messages.usd') }}
+                    {{ $item->final_price }} {{ __('messages.ryal') }}
                 </td>
                 <td style="padding: 5px;vertical-align: top;text-align: center;border-bottom: 1px solid #eee;">
-                    {{ $item->final_price }} {{ __('messages.usd') }}
+                    {{ $item->installation_cost }} {{ __('messages.ryal') }}
                 </td>
+                
                 <td style="padding: 5px;vertical-align: top;text-align: center;border-bottom: 1px solid #eee;">
-                    {{ (double)$item->final_price * (double)$item->count }} {{ __('messages.usd') }}
+                    {{ (double)$item->final_price * (double)$item->count }} {{ __('messages.ryal') }}
                 </td>
                 
             </tr>
             @endforeach
-            
-            
             <tr class="heading">
+                <td colspan="2" style="padding: 5px;text-align:center;vertical-align: top;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
+                    {{ __('messages.discount') }}
+                </td>
+                
                 <td style="padding: 5px;text-align:center;vertical-align: top;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
-                    {{ __('messages.total') }}
+                    
+                </td>
+                <td style="padding: 5px;vertical-align: top;text-align: center;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
+                    
+                </td>
+                
+                <td style="padding: 5px;vertical-align: top;text-align: center;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
+                    
                 </td>
                 <td style="padding: 5px;text-align:center;vertical-align: top;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
                     
                 </td>
+                <td colspan="2" style="padding: 5px;text-align:center;vertical-align: top;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
+                    {{ $data['order']->discount }} {{ __('messages.ryal') }}
+                </td>
+                
+            </tr>
+            <tr class="heading">
+                <td colspan="2" style="padding: 5px;text-align:center;vertical-align: top;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
+                    {{ __('messages.delivery_installation_cost') }}
+                </td>
+                
+                <td style="padding: 5px;text-align:center;vertical-align: top;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
+                    
+                </td>
+                
                 <td style="padding: 5px;text-align:center;vertical-align: top;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
                     
                 </td>
@@ -122,13 +146,33 @@
                 <td style="padding: 5px;text-align:center;vertical-align: top;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
                     
                 </td>
-                
                 <td colspan="2" style="padding: 5px;text-align:center;vertical-align: top;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
-                    {{ $data['order']->subtotal_price }} {{ __('messages.usd') }}
+                    {{ $data['order']->delivery_cost }} {{ __('messages.ryal') }}
+                </td>
+                
+            </tr>
+            <tr class="heading">
+                <td colspan="2" style="padding: 5px;text-align:center;vertical-align: top;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
+                    {{ __('messages.total') }}
                 </td>
                 <td style="padding: 5px;text-align:center;vertical-align: top;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
                     
                 </td>
+                <td style="padding: 5px;text-align:center;vertical-align: top;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
+                    
+                </td>
+                
+                <td style="padding: 5px;text-align:center;vertical-align: top;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
+                    
+                </td>
+                <td style="padding: 5px;vertical-align: top;text-align: center;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
+                    
+                </td>
+            
+                <td colspan="2" style="padding: 5px;text-align:center;vertical-align: top;background: #eee;border-bottom: 1px solid #ddd;font-weight: bold;">
+                    {{ $data['order']->total_price }} {{ __('messages.ryal') }}
+                </td>
+                
             </tr>
             
             {{-- <tr class="total">

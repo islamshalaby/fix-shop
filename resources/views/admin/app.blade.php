@@ -317,54 +317,6 @@
                     </li>
                     @endif
 
-                    @if(in_array(34 , Auth::user()->custom['admin_permission']))
-                    <li class="menu countries">
-                        <a href="#countries" data-active="true" data-toggle="collapse" aria-expanded="true" class="dropdown-toggle first-link">
-                            <div class="">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-layers"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-                                <span>{{ __('messages.countries') }}</span>
-                            </div>
-                            <div>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                            </div>
-                        </a>
-                        <ul class="collapse submenu list-unstyled show" id="countries" data-parent="#accordionExample">
-                            {{-- @if(Auth::user()->add_data)
-                                <li class="active add">
-                                    <a href="/admin-panel/categories/add"> {{ __('messages.add') }} </a>
-                                </li>
-                            @endif --}}
-                            <li class="show" >
-                                <a href="{{ route('countries.show') }}"> {{ __('messages.show') }} </a>
-                            </li>
-                        </ul>
-                    </li>
-                    @endif
-
-                    {{-- @if(in_array(14 , Auth::user()->custom['admin_permission']))
-                    <li class="menu brands">
-                        <a href="#brands" data-active="true" data-toggle="collapse" aria-expanded="true" class="dropdown-toggle first-link">
-                            <div class="">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-bold"><path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path><path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path></svg>
-                                <span>{{ __('messages.brands') }}</span>
-                            </div>
-                            <div>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                            </div>
-                        </a>
-                        <ul class="collapse submenu list-unstyled show" id="brands" data-parent="#accordionExample">
-                            @if(Auth::user()->add_data)
-                                <li class="active add">
-                                    <a href="{{ route('brands.add') }}"> {{ __('messages.add') }} </a>
-                                </li>
-                            @endif
-                            <li class="show" >
-                                <a href="{{ route('brands.index') }}"> {{ __('messages.show') }} </a>
-                            </li>
-                        </ul>
-                    </li>
-                    @endif --}}
-
                     @if(in_array(35 , Auth::user()->custom['admin_permission']))
                     <li class="menu discounts">
                         <a href="#discounts" data-active="true" data-toggle="collapse" aria-expanded="true" class="dropdown-toggle first-link">
@@ -418,116 +370,31 @@
                     </li>
                     @endif
 
-                    
-
-                    {{-- @if(in_array(27 , Auth::user()->custom['admin_permission']))
-                    <li class="menu properties_categories">
-                        <a href="#properties_categories" data-active="true" data-toggle="collapse" aria-expanded="true" class="dropdown-toggle first-link">
-                            <div class="">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check-square"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
-                                <span>{{ __('messages.properties_categories') }}</span>
-                            </div>
-                            <div>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                            </div>
-                        </a>
-                        <ul class="collapse submenu list-unstyled show" id="properties_categories" data-parent="#accordionExample">
-                            @if(Auth::user()->add_data)
-                                <li class="active add">
-                                    <a href="{{ route('options.categories.add') }}"> {{ __('messages.add') }} </a>
-                                </li>
-                            @endif
-                            <li class="show" >
-                                <a href="{{ route('options.categories.index') }}"> {{ __('messages.show') }} </a>
-                            </li>
-                        </ul>
-                    </li>
-                    @endif --}}
-
-                    {{-- @if(in_array(16 , Auth::user()->custom['admin_permission']))
-                    <li class="menu properties">
-                        <a href="#properties" data-active="true" data-toggle="collapse" aria-expanded="true" class="dropdown-toggle first-link">
-                            <div class="">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check-square"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
-                                <span>{{ __('messages.properties') }}</span>
-                            </div>
-                            <div>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                            </div>
-                        </a>
-                        <ul class="collapse submenu list-unstyled show" id="properties" data-parent="#accordionExample">
-                            @if(Auth::user()->add_data)
-                                <li class="active add">
-                                    <a href="{{ route('options.add') }}"> {{ __('messages.add') }} </a>
-                                </li>
-                            @endif
-                            <li class="show" >
-                                <a href="{{ route('options.index') }}"> {{ __('messages.show') }} </a>
-                            </li>
-                        </ul>
-                    </li>
-                    @endif --}}
-
-                    {{-- @if(in_array(23 , Auth::user()->custom['admin_permission']))
-                    <li class="menu multi_options">
-                        <a href="#multi_options" data-active="true" data-toggle="collapse" aria-expanded="true" class="dropdown-toggle first-link">
-                            <div class="">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-check-square"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
-                                <span>{{ __('messages.multi_option_value') }}</span>
-                            </div>
-                            <div>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                            </div>
-                        </a>
-                        <ul class="collapse submenu list-unstyled show" id="multi_options" data-parent="#accordionExample">
-                            @if(Auth::user()->add_data)
-                                <li class="active add">
-                                    <a href="{{ route('multi_options.edit', 8) }}"> {{ __('messages.add') }} </a>
-                                </li>
-                            @endif
-                            <li class="show" >
-                                <a href="{{ route('multi_options.index') }}"> {{ __('messages.show') }} </a>
-                            </li>
-                        </ul>
-                    </li>
-                    @endif --}}
-
-                    {{-- @if(in_array(33 , Auth::user()->custom['admin_permission']))
-                    <li class="menu home_sections">
-                        <a href="#home_sections" data-active="true" data-toggle="collapse" aria-expanded="true" class="dropdown-toggle first-link">
-                            <div class="">
-                                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
-                                <span>{{ __('messages.home_sections') }}</span>
-                            </div>
-                            <div>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                            </div>
-                        </a>
-                        <ul class="collapse submenu list-unstyled show" id="home_sections" data-parent="#accordionExample">
-                            @if(Auth::user()->add_data)
-                                <li class="active add">
-                                    <a href="{{ route('home_sections.add') }}"> {{ __('messages.add') }} </a>
-                                </li>
-                            @endif
-                            <li class="show" >
-                                <a href="{{ route('home_sections.index') }}"> {{ __('messages.show') }} </a>
-                            </li>
-                        </ul>
-                    </li>
-                    @endif --}}
-
                     @if(in_array(19 , Auth::user()->custom['admin_permission']))
                     <li class="menu orders">
-                        <a href="{{ route('orders.index') }}" class="dropdown-toggle first-link">
+                        <a href="#orders" data-active="true" data-toggle="collapse" aria-expanded="true" class="dropdown-toggle first-link">
                             <div class="">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-airplay"><path d="M5 17H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-1"></path><polygon points="12 15 17 21 7 21 12 15"></polygon></svg>
-                                <span>{{ __('messages.main_orders') }}</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-award"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
+                                <span>{{ __('messages.orders') }}</span>
+                            </div>
+                            <div>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right"><polyline points="9 18 15 12 9 6"></polyline></svg>
                             </div>
                         </a>
+                        <ul class="collapse submenu list-unstyled show" id="orders" data-parent="#accordionExample">
+                            <li class="active show">
+                                <a href="{{ route('orders.index') }}"> {{ __('messages.main_orders') }} </a>
+                            </li>
+                            
+                            <li class="delivery-reports" >
+                                <a href="{{ route('orders.deliveryReports.index') }}"> {{ __('messages.delivery_reports') }} </a>
+                            </li>
+                            <li class="products-orders" >
+                                <a href="{{ route('orders.productsOrders.index') }}"> {{ __('messages.products_orders') }} </a>
+                            </li>
+                        </ul>
                     </li>
-                    @endif
-
-
+                    @endif 
 
                     @if(in_array(5 , Auth::user()->custom['admin_permission']))
                     <li class="menu contact_us">
@@ -598,17 +465,6 @@
                             <div class="">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                                 <span>{{ __('messages.settings') }}</span>
-                            </div>
-                        </a>
-                    </li>
-                    @endif
-
-                    @if(in_array(8 , Auth::user()->custom['admin_permission']))
-                    <li class="menu meta_tags">
-                        <a href="/admin-panel/meta_tags" class="dropdown-toggle first-link">
-                            <div class="">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-search"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                                <span>{{ __('messages.meta_tags') }}</span>
                             </div>
                         </a>
                     </li>

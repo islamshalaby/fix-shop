@@ -64,18 +64,34 @@ $url = 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
         } );
     </script>
     <script>
-        var price = dTbls.column(4).data(),
-            dinar = "{{ __('messages.usd') }}"
+        var price = dTbls.column(8).data(),
+            ryal = "{{ __('messages.ryal') }}",
+            subtotal = dTbls.column(7).data(),
+            discount = dTbls.column(6).data(),
+            delivery = dTbls.column(5).data()
             
-        var totalPrice = parseFloat(price.reduce(function (a, b) { return parseFloat(a) + parseFloat(b); }, 0)).toFixed(3)
+        var totalPrice = parseFloat(price.reduce(function (a, b) { return parseFloat(a) + parseFloat(b); }, 0)).toFixed(3),
+            subtotalPrice = parseFloat(subtotal.reduce(function (a, b) { return parseFloat(a) + parseFloat(b); }, 0)).toFixed(3),
+            totalDiscount = parseFloat(discount.reduce(function (a, b) { return parseFloat(a) + parseFloat(b); }, 0)).toFixed(3),
+            totalDelivery = parseFloat(delivery.reduce(function (a, b) { return parseFloat(a) + parseFloat(b); }, 0)).toFixed(3)
 
-        $("#order-tbl tfoot").find('th').eq(4).text(`${totalPrice} ${dinar}`);
+        $("#order-tbl tfoot").find('th').eq(8).text(`${totalPrice} ${ryal}`)
+        $("#order-tbl tfoot").find('th').eq(7).text(`${subtotalPrice} ${ryal}`)
+        $("#order-tbl tfoot").find('th').eq(6).text(`${totalDiscount} ${ryal}`)
+        $("#order-tbl tfoot").find('th').eq(5).text(`${totalDelivery} ${ryal}`)
     </script>
     
 @endpush
 
 @section('content')
     <div id="tableSimple" class="col-lg-12 col-12 layout-spacing"> 
+        @if(Session::has('success'))
+            <div class="alert alert-icon-left alert-light-success mb-4" role="alert">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <svg xmlns="http://www.w3.org/2000/svg" data-dismiss="alert" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x close"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-alert-triangle"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12" y2="17"></line></svg>
+                <strong>{{ Session('success') }}</strong>
+            </div>
+        @endif
         <div class="statbox widget box box-shadow">
             
             <div class="widget-content widget-content-area">
@@ -107,17 +123,17 @@ $url = 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
                                 <option {{ isset($data['method']) && $data['method'] == 3 ? 'selected' : '' }} value="3">{{ __('messages.wallet') }}</option>
                                 
                             </select>
-                        </div>
+                        </div> --}}
 
                         <div class="form-group col-md-3">
                             <label for="orderStatus">{{ __('messages.status') }}</label>
                             <select required id="orderStatus" name="order_status2" class="form-control">
                                 <option disabled selected>{{ __('messages.select') }}</option>
                                 
-                                <option {{ isset($data['order_status2']) && $data['order_status2'] == 'opened' ? 'selected' : '' }} value="opened">{{ __('messages.opened') }}</option>
-                                <option {{ isset($data['order_status2']) && $data['order_status2'] == 'closed' ? 'selected' : '' }} value="closed">{{ __('messages.closed') }}</option>
+                                <option {{ Request::get('order_status2') && Request::get('order_status2') == 'opened' ? 'selected' : '' }} value="opened">{{ __('messages.opened') }}</option>
+                                <option {{ Request::get('order_status2') && Request::get('order_status2') == 'closed' ? 'selected' : '' }} value="closed">{{ __('messages.closed') }}</option>
                             </select>
-                        </div> --}}
+                        </div>
                     </div>
                 </form>
                 
@@ -134,9 +150,12 @@ $url = 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
                     
                     @php
                         $queryArray = [];
-                        if(isset($data['from']) && isset($data['to'])) {
-                            $queryArray['from'] = $data['from'];
-                            $queryArray['to'] = $data['to'];
+                        if(Request::get('from') && Request::get('to')) {
+                            $queryArray['from'] = Request::get('from');
+                            $queryArray['to'] = Request::get('to');
+                        }
+                        if (Request::get('order_status2')) {
+                            $queryArray['order_status2'] = Request::get('order_status2');
                         }
                         
                     @endphp
@@ -151,9 +170,15 @@ $url = 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
                         <tr>
                             <th>id</th>
                             <th>{{ __('messages.order_number') }}</th>
+                            <th>{{ __('messages.follow_number') }}</th>
                             <th>{{ __('messages.order_date') }}</th>
                             <th>{{ __('messages.user') }}</th>
+                            <th>{{ __('messages.delivery_installation_cost') }}</th>
+                            <th>{{ __('messages.discount') }}</th>
                             <th>{{ __('messages.price') }}</th>
+                            <th>{{ __('messages.total') }}</th>
+                            <th>{{ __('messages.status') }}</th>
+                            <th>{{ __('messages.actions') }}</th>
                             <th class="text-center hide_col">{{ __('messages.details') }}</th>
                             <th class="text-center hide_col">{{ __('messages.invoice') }}</th>
                         </tr>
@@ -165,14 +190,30 @@ $url = 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
                             <tr>
                                 <td><?=$i;?></td>
                                 <td>{{ $order->order_number }}</td>
+                                <td>{{ $order->follow_number }}</td>
                                 <td>{{ $order->created_at->format("d-m-y") }}</td>
                                 <td>
                                     <a target="_blank" href="{{ route('users.details', $order->user->id) }}">
                                     {{ $order->user->name }}
                                     </a>
                                 </td>
-                                
-                                <td>{{ $order->subtotal_price . " " . __('messages.usd') }}</td>
+                                <td>{{ $order->delivery_cost . " " . __('messages.ryal') }}</td>
+                                <td>{{ $order->discount . " " . __('messages.ryal') }}</td>
+                                <td>{{ $order->subtotal_price . " " . __('messages.ryal') }}</td>
+                                <td>{{ $order->total_price . " " . __('messages.ryal') }}</td>
+                                <td>
+                                    @if ($order->status == 1)
+                                    <span class="badge outline-badge-warning">{{ __('messages.opened') }}</span>
+                                    @else
+                                    <span class="badge outline-badge-warning">{{ __('messages.closed') }}</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if ($order->status == 1)
+                                    <a class="btn btn-primary  mb-2 mr-2 rounded-circle" onclick='return confirm("{{ __('messages.are_you_sure') }}");' href="{{ route('orders.update.status', [$order->id, 2]) }}" ><i class="fa fa-lock" aria-hidden="true"></i></a>
+                                    <a class="btn btn-danger  mb-2 mr-2 rounded-circle" onclick='return confirm("{{ __('messages.are_you_sure') }}");' href="{{ route('orders.update.status', [$order->id, 3]) }}" ><i class="fa fa-times" aria-hidden="true"></i></a><br/>
+                                    @endif
+                                </td>
                                 <td class="text-center blue-color hide_col"><a href="{{ route('orders.details', $order->id) }}" ><i class="far fa-eye"></i></a></td>
                                 <td class="text-center blue-color hide_col"><a target="_blank" href="{{ route('webview.invoice', $order->id) }}" ><i class="far fa-eye"></i></a></td>
                             </tr>
@@ -181,13 +222,15 @@ $url = 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
                     </tbody>
                     <tfoot>
                         <tr>
-                          <th>{{ __('messages.total') }}:</th>
+                          <th>{{ __('messages.price') }}:</th>
                           <th></th>
                           <th></th>
                           <th></th>
                           <th></th>
                           <th></th>
-                          
+                          <th></th>
+                          <th></th>
+                          <th colspan="2"></th>
                         </tr>
                     </tfoot>
                 </table>
