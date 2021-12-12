@@ -455,7 +455,6 @@ class OrderController extends Controller
         $data['order'] = Order::where('id', $order_id)->select('id', 'order_number', 'follow_number', 'created_at as date', 'address_id', 'subtotal_price', 'total_price', 'delivery_cost', 'payment_method')->first()->makeHidden(['address', 'address_id']);
         $data['order']->orders = $data['order']->orders();
         $data['address'] = $data['order']->address->extra_details;
-        return $data;
 
         $response = APIHelpers::createApiResponse(false , 200 , '' , '' , $data , $request->lang);
         return response()->json($response , 200);
