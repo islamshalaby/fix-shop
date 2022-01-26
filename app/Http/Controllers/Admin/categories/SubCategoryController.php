@@ -19,6 +19,24 @@ class SubCategoryController extends AdminController
     {
         return view('admin.categories.sub_catyegory.create',compact('id'));
     }
+    // sorting
+    public function sort(Request $request) {
+        $post = $request->all();
+        $count = 0;
+        for ($i = 0; $i < count($post['id']); $i ++) :
+            $index = $post['id'][$i];
+            $home_section = SubCategory::findOrFail($index);
+            $count ++;
+            $newPosition = $count;
+            $data['sort'] = $newPosition;
+            if($home_section->update($data)) {
+                echo "success";
+            }else {
+                echo "failed";
+            }
+        endfor;
+        exit('success');
+    }
     public function store(Request $request)
     {
         $data = $this->validate(\request(),
@@ -44,7 +62,7 @@ class SubCategoryController extends AdminController
     {
         $cat_id = $id;
         $lang = Lang::getLocale();
-        $data = SubCategory::where('deleted' , 0)->where('category_id' , $id)->select('id' , 'image' , 'title_' . $lang . ' as title', 'category_id')->get()
+        $data = SubCategory::where('deleted' , 0)->where('category_id' , $id)->select('id' , 'image' , 'title_' . $lang . ' as title', 'category_id')->orderBy('sort', 'asc')->get()
         ->makeHidden('subCategories')
         ->map(function($sCat){
             $sCat->next_level = false;

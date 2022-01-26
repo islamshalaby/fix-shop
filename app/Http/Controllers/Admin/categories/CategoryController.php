@@ -13,6 +13,24 @@ class CategoryController extends AdminController{
     public function AddGet(){
         return view('admin.categories.create');
     }
+    // sort
+    public function sort(Request $request) {
+        $post = $request->all();
+        $count = 0;
+        for ($i = 0; $i < count($post['id']); $i ++) :
+            $index = $post['id'][$i];
+            $home_section = Category::findOrFail($index);
+            $count ++;
+            $newPosition = $count;
+            $data['sort'] = $newPosition;
+            if($home_section->update($data)) {
+                echo "success";
+            }else {
+                echo "failed";
+            }
+        endfor;
+        exit('success');
+    }
     // type : post -> add new category
     public function AddPost(Request $request){
         $image_name = $request->file('image')->getRealPath();
@@ -33,7 +51,7 @@ class CategoryController extends AdminController{
     // get all categories
     public function show(Request $request){
         $lang = Lang::getLocale();
-        $data['categories'] = Category::where('deleted', 0)->select('id', 'title_' . $lang . ' as title', 'image', 'show_home')->get()->makeHidden('subCategories')
+        $data['categories'] = Category::where('deleted', 0)->select('id', 'title_' . $lang . ' as title', 'image', 'show_home')->orderBy('sort', 'asc')->get()->makeHidden('subCategories')
         ->map(function ($cat) {
             
             if ($cat->subCategories && count($cat->subCategories) > 0) {
@@ -52,6 +70,7 @@ class CategoryController extends AdminController{
 
             return $cat;
         });
+        // dd(count($data['categories'][0]->products));
         return view('admin.categories.index' , ['data' => $data]);
     }
     // get edit page

@@ -92,7 +92,6 @@ class AdController extends AdminController{
 
     public function delete(Request $request){
         $ad = Ad::find($request->id);
-        $ad->text->delete();
         if($ad){
             $ad->delete();
         }

@@ -15,6 +15,24 @@ class SubTwoCategoryController extends AdminController
     {
 
     }
+    // sorting
+    public function sort(Request $request) {
+        $post = $request->all();
+        $count = 0;
+        for ($i = 0; $i < count($post['id']); $i ++) :
+            $index = $post['id'][$i];
+            $home_section = SubTwoCategory::findOrFail($index);
+            $count ++;
+            $newPosition = $count;
+            $data['sort'] = $newPosition;
+            if($home_section->update($data)) {
+                echo "success";
+            }else {
+                echo "failed";
+            }
+        endfor;
+        exit('success');
+    }
     public function create($id)
     {
         return view('admin.categories.sub_catyegory.sub_two_category.create',compact('id'));
@@ -43,7 +61,7 @@ class SubTwoCategoryController extends AdminController
     {
         $cat_id = $id;
         $lang = Lang::getLocale();
-        $data = SubTwoCategory::where('deleted' , 0)->where('sub_category_id' , $id)->select('id' , 'image' , 'title_' . $lang . ' as title', 'sub_category_id')->get()
+        $data = SubTwoCategory::where('deleted' , 0)->where('sub_category_id' , $id)->select('id' , 'image' , 'title_' . $lang . ' as title', 'sub_category_id')->orderBy('sort', 'asc')->get()
         ->makeHidden(['subCategories', 'category'])
         ->map(function($sCat) {
             $sCat->next_level = false;

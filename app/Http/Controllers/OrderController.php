@@ -57,17 +57,23 @@ class OrderController extends Controller
         $visitor = Visitor::where('unique_id', $request->unique_id)->select('id')->first();
         
         if ($visitor) {
-            $cart = Cart::where('visitor_id', $visitor->id)->get();
+            $cart = Cart::where('visitor_id', $visitor->id)->has('product', '>', 0)->get();
             
             if (count($cart) > 0) {
                 for ($i = 0; $i < count($cart); $i++) {
-                    $product = Product::where('deleted', 0)->where('hidden', 0)->where('id', $cart[$i]->product_id)->first();
+                    $product = Product::where('id', $cart[$i]->product_id)->first();
+                    if ($product->deleted == 1 || $product->hidden == 1) {
+                        $cart[$i]->delete();
+                    }
                     if ($cart[$i]->product->remaining_quantity < $cart[$i]['count']) {
                         $response = APIHelpers::createApiResponse(true , 406 , 'Remaining Quantity is not enough' , 'الكمية المتبقية غير كافية' , null , $request->lang);
                         return response()->json($response , 406);
                     }
                 }
-            }
+            }else {
+				$response = APIHelpers::createApiResponse(true , 406 , 'Cart is empty' , 'العربة لا يوجد بها منتجات' , null , $request->lang);
+				return response()->json($response , 406);
+			}
             $total = 0.000;
             $totalDiscount = 0.000;
             $subTotal = 0.000;
@@ -79,6 +85,7 @@ class OrderController extends Controller
             if (count($cart) > 0) {
                 for ($i = 0; $i < count($cart); $i ++) {
                     $product = Product::where('deleted', 0)->where('hidden', 0)->where('id', $cart[$i]->product_id)->first();
+					
                     $cartCount = $cart[$i]['count'];
                     $totalCount = $totalCount + $cart[$i]['count'];
                     $price = $product['final_price'];

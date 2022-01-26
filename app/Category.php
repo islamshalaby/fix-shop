@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 
 class Category extends Model
 {
-    protected $fillable = ['image', 'title_en', 'title_ar', 'deleted', 'show_home'];
+    protected $fillable = ['image', 'title_en', 'title_ar', 'deleted', 'show_home', 'sort'];
     protected $hidden = ['pivot'];
     protected  $appends = ['offers'];
 

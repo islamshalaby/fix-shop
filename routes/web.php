@@ -137,7 +137,12 @@ Route::group([
         Route::post('product/{id}' , 'LikeCardController@postBuyAndAddProduct');
          
     });
-
+    Route::post('categories/sort' , 'categories\CategoryController@sort')->name('category.sort');
+    Route::post('sub_cat/sort' , 'categories\SubCategoryController@sort')->name('sub_cat.sort');
+    Route::post('sub_two_cat/sort' , 'categories\SubTwoCategoryController@sort')->name('sub_two_cat.sort');
+    Route::post('sub_three_cat/sort' , 'categories\SubThreeCategoryController@sort')->name('sub_three_cat.sort');
+    Route::post('sub_four_cat/sort' , 'categories\SubFourCategoryController@sort')->name('sub_four_cat.sort');
+    Route::post('sub_five_cat/sort' , 'categories\SubFiveCategoryController@sort')->name('sub_five_cat.sort');
     // Categories Route
     // Route::group([
     //     "prefix" => "categories"

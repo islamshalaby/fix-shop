@@ -193,40 +193,46 @@ class VisitorController extends Controller
             if (count($cart) > 0) {
                 for ($i = 0; $i < count($cart); $i ++) {
                     $product = Product::where('id', $cart[$i]['id'])
+                    ->where("deleted", 0)
+                    ->where("hidden", 0)
                     ->select('id', 'title_' . $request->lang . ' as title', 'offer', 'final_price', 'price_before_offer', 'offer_percentage', 'installation_cost')
-                    ->first()
-                    ->makeHidden(['images', 'installation_cost']);
-                    $product['count'] = $cart[$i]['count'];
-                    $price = $product['final_price'];
-                    $priceBOffer = $product['price_before_offer'];
-                    
-                    if ($product->main_image) {
-                        $product->main_image = $product->main_image->image;
-                    }else {
-                        if (count($product->images) > 0) {
-                            $product->main_image = $product->images[0]->image;
+                    ->first();
+                    if ($product) {
+                        $product['count'] = $cart[$i]['count'];
+                        $price = $product['final_price'];
+                        $priceBOffer = $product['price_before_offer'];
+                        
+                        if ($product->main_image) {
+                            $product->main_image = $product->main_image->image;
+                        }else {
+                            if (count($product->images) > 0) {
+                                $product->main_image = $product->images[0]->image;
+                            }
                         }
-                    }
-                    $user = auth()->user();
-                    if($user){
-                        $favorite = Favorite::where('user_id' , $user->id)->where('product_id' , $product->id)->first();
-                        if($favorite){
-                            $product->favorite = true;
+                        $user = auth()->user();
+                        if($user){
+                            $favorite = Favorite::where('user_id' , $user->id)->where('product_id' , $product->id)->first();
+                            if($favorite){
+                                $product->favorite = true;
+                            }else{
+                                $product->favorite = false;
+                            }
                         }else{
                             $product->favorite = false;
                         }
-                    }else{
-                        $product->favorite = false;
+                        $data['subtotal'] = $data['subtotal'] + ($price * $cart[$i]['count']);
+                        $data['total'] = $data['total'] + (($price + $product['installation_cost']) * $cart[$i]['count']);
+                        $data['total'] = number_format((float)$data['total'], 3, '.', '');
+                        $product['final_price'] = number_format((float)$price, 3, '.', '');
+                        $product['final_price'] = number_format((float)$product['final_price'], 3, '.', '');
+                        $product['price_before_offer'] = number_format((float)$priceBOffer, 3, '.', '');
+                        $product['delivery_installation_cost'] = number_format((float)$product['installation_cost'], 3, '.', '');
+                        $data['products_count'] ++;
+                        array_push($data['cart'], $product);
+                    }else {
+                        $cart[$i]->delete();
                     }
-                    $data['subtotal'] = $data['subtotal'] + ($price * $cart[$i]['count']);
-                    $data['total'] = $data['total'] + (($price + $product['installation_cost']) * $cart[$i]['count']);
-                    $data['total'] = number_format((float)$data['total'], 3, '.', '');
-                    $product['final_price'] = number_format((float)$price, 3, '.', '');
-                    $product['final_price'] = number_format((float)$product['final_price'], 3, '.', '');
-                    $product['price_before_offer'] = number_format((float)$priceBOffer, 3, '.', '');
-                    $product['delivery_installation_cost'] = number_format((float)$product['installation_cost'], 3, '.', '');
-                    $data['products_count'] ++;
-                    array_push($data['cart'], $product);
+                    
                 }
             }
             $data['subtotal'] = number_format((float)$data['subtotal'], 3, '.', '');

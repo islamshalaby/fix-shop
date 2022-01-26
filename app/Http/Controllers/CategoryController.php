@@ -32,7 +32,7 @@ class CategoryController extends Controller
         if ($request->show && $request->show != 'all') {
             $data = $data->take(6);
         }
-        $data = $data->get()->makeHidden(['subCategories', 'offersProducts', 'offers'])
+        $data = $data->orderBy('sort', 'asc')->get()->makeHidden(['subCategories', 'offersProducts', 'offers'])
         ->map(function ($cat) use ($root_url, $request) {
             
             $url['sub_cat'] = $root_url . '/api/categories/'. $cat->id . '/sub-categories/' . $request->lang .'/v1';
@@ -76,7 +76,7 @@ class CategoryController extends Controller
         if (count($ad) > 0) {
             $data['ad'] = $ad[0];
         }
-        $data['sub_categories'] = SubCategory::where('deleted' , 0)->where('category_id' , $request->category_id)->has('products', '>', 0)->select('id' , 'image' , 'title_en as title', 'category_id')->get()
+        $data['sub_categories'] = SubCategory::where('deleted' , 0)->where('category_id' , $request->category_id)->has('products', '>', 0)->select('id' , 'image' , 'title_en as title', 'category_id')->orderBy('sort', 'asc')->get()
         ->makeHidden('subCategories')
         ->map(function($sCat) use ($request){
             $sCat->next_level = false;
@@ -117,7 +117,7 @@ class CategoryController extends Controller
         if (count($ad) > 0) {
             $data['ad'] = $ad[0];
         }
-        $data['sub_categories'] = SubTwoCategory::where('deleted' , 0)->where('sub_category_id' , $request->sub_category_id)->has('products', '>', 0)->select('id' , 'image' , 'title_en as title', 'sub_category_id')->get()
+        $data['sub_categories'] = SubTwoCategory::where('deleted' , 0)->where('sub_category_id' , $request->sub_category_id)->has('products', '>', 0)->select('id' , 'image' , 'title_en as title', 'sub_category_id')->orderBy('sort', 'asc')->get()
         ->makeHidden(['subCategories', 'category'])
         ->map(function($sCat) use ($request){
             $sCat->next_level = false;
@@ -157,7 +157,7 @@ class CategoryController extends Controller
         if (count($ad) > 0) {
             $data['ad'] = $ad[0];
         }
-        $data['sub_categories'] = SubThreeCategory::where('deleted' , 0)->where('sub_category_id' , $request->sub_category_id)->has('products', '>', 0)->select('id' , 'image' , 'title_en as title', 'sub_category_id')->get()
+        $data['sub_categories'] = SubThreeCategory::where('deleted' , 0)->where('sub_category_id' , $request->sub_category_id)->has('products', '>', 0)->select('id' , 'image' , 'title_en as title', 'sub_category_id')->orderBy('sort', 'asc')->get()
         ->makeHidden(['subCategories', 'category'])
         ->map(function($sCat) use ($request){
             $sCat->next_level = false;
@@ -198,7 +198,7 @@ class CategoryController extends Controller
         if (count($ad) > 0) {
             $data['ad'] = $ad[0];
         }
-        $data['sub_categories'] = SubFourCategory::where('deleted' , 0)->where('sub_category_id' , $request->sub_category_id)->has('products', '>', 0)->select('id' , 'image' , 'title_en as title', 'sub_category_id')->get()
+        $data['sub_categories'] = SubFourCategory::where('deleted' , 0)->where('sub_category_id' , $request->sub_category_id)->has('products', '>', 0)->select('id' , 'image' , 'title_en as title', 'sub_category_id')->orderBy('sort', 'asc')->get()
         ->makeHidden(['subCategories', 'category'])
         ->map(function($sCat) use ($request){
             $sCat->next_level = false;
@@ -243,7 +243,7 @@ class CategoryController extends Controller
         if (count($ad) > 0) {
             $data['ad'] = $ad[0];
         }
-        $data['sub_categories'] = SubFiveCategory::where('deleted' , 0)->where('sub_category_id' , $request->sub_category_id)->has('products', '>', 0)->select('id' , 'image' , 'title_en as title', 'sub_category_id')->get()
+        $data['sub_categories'] = SubFiveCategory::where('deleted' , 0)->where('sub_category_id' , $request->sub_category_id)->has('products', '>', 0)->select('id' , 'image' , 'title_en as title', 'sub_category_id')->orderBy('sort', 'asc')->get()
         ->makeHidden(['subCategories', 'category'])
         ->map(function($sCat) use ($request){
             $sCat->next_level = false;

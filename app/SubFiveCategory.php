@@ -6,8 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class SubFiveCategory extends Model
 {
-    protected $fillable = ['title_en', 'title_ar', 'image', 'deleted', 'sub_category_id'];
-
+    protected $fillable = ['title_en', 'title_ar', 'image', 'deleted', 'sub_category_id', 'sort'];
 
     public function Category() {
         return $this->belongsTo('App\SubFourCategory', 'sub_category_id')->where('deleted', 0);

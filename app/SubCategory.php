@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 
 class SubCategory extends Model
 {
-    protected $fillable = ['title_en', 'title_ar', 'image', 'deleted', 'brand_id', 'category_id'];
+    protected $fillable = ['title_en', 'title_ar', 'image', 'deleted', 'brand_id', 'category_id', 'sort'];
 
     public function brand() {
         return $this->belongsTo('App\Brand', 'brand_id');
